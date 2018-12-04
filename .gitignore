@@ -236,3 +236,5 @@ tags
 [._]*.un~
 
 # End of https://www.gitignore.io/api/emacs,c,c++,cmake,vim,intellij
+
+build/
