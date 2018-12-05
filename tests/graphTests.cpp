@@ -138,3 +138,49 @@ TEST(GraphTest, ForAllNodes) {
     }
 }
 
+TEST(GraphTest, EdgeLevels) {
+    Graph g(3);
+
+    g.addEdge(0,1);
+    g.addEdge(1,2);
+    g.addEdge(1,0);
+
+    g.setEdgeLevel(1, 2, 1);
+    g.setEdgeLevel(1, 0, 2);
+
+    EXPECT_EQ(g.getEdgeLevel(0, 1), EDGELEVEL_INFINIY);
+    EXPECT_EQ(g.getEdgeLevel(1, 2), 1);
+    EXPECT_EQ(g.getEdgeLevel(1, 0), 2);
+
+    vector<NODE_T> result;
+
+    result.clear();
+    g.forAllNeighborsOutWithHighLevel(0, 0, [&] (NODE_T v) { result.push_back(v); });
+    ASSERT_GE(result.size(), 1);
+    EXPECT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0], 1);
+
+    result.clear();
+    g.forAllNeighborsOutWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v) { result.push_back(v); });
+    ASSERT_GE(result.size(), 1);
+    EXPECT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0], 1);
+
+    result.clear();
+    g.forAllNeighborsOutWithHighLevel(1, 1, [&] (NODE_T v) { result.push_back(v); });
+    ASSERT_GE(result.size(), 2);
+    EXPECT_EQ(result.size(), 2);
+    sort(result.begin(), result.end());
+    EXPECT_EQ(result[0], 0);
+    EXPECT_EQ(result[1], 2);
+
+    result.clear();
+    g.forAllNeighborsOutWithHighLevel(1, 2, [&] (NODE_T v) { result.push_back(v); });
+    ASSERT_GE(result.size(), 1);
+    EXPECT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0], 0);
+
+    result.clear();
+    g.forAllNeighborsOutWithHighLevel(1, 3, [&] (NODE_T v) { result.push_back(v); });
+    EXPECT_EQ(result.size(), 0);
+}

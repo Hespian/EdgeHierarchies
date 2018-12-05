@@ -8,6 +8,8 @@
 
 #pragma once
 #include <cstdint>
+#include <limits>
 
 #define NODE_T uint32_t
-#define EDGE_T uint32_t
+#define EDGELEVEL_T uint32_t
+#define EDGELEVEL_INFINIY std::numeric_limits<EDGELEVEL_T>::max()
