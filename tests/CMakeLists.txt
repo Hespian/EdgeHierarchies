@@ -8,8 +8,8 @@
 
 include_directories(SYSTEM ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-add_executable(tests "tests.cpp")
+add_executable(graphTest "graphTests.cpp")
 
-target_link_libraries(tests gtest gtest_main)
+target_link_libraries(graphTest gtest gtest_main)
 
-add_test(tests tests)
+add_test(graphTest graphTest)

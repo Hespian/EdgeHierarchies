@@ -24,8 +24,9 @@ endif()
 
 add_subdirectory(googletest/googletest)
 
-set(EDGEHIERARCHIES_DEFINITIONS "")
-set(EDGEHIERARCHIES_INCLUDE_DIRS
+
+include_directories(
+  ${PROJECT_SOURCE_DIR}/lib
   )
 
 # descend into apps
