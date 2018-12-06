@@ -205,5 +205,4 @@ TEST(GraphTest, EdgeLevels) {
     result.clear();
     g.forAllNeighborsInWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
     EXPECT_EQ(result.size(), 0);
-
 }

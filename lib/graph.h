@@ -1,5 +1,5 @@
 /*******************************************************************************
- * app/graph.h
+ * lib/graph.h
  *
  * Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
  *
