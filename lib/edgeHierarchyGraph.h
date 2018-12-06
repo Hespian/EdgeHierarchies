@@ -1,5 +1,5 @@
 /*******************************************************************************
- * lib/graph.h
+ * lib/edgeHierarchyGraph.h
  *
  * Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
  *
@@ -14,9 +14,9 @@
 
 using namespace std;
 
-class Graph {
+class EdgeHierarchyGraph {
 public:
-    Graph(int n) : n(n), neighborsIn(n), neighborsOut(n), edgeWeightsIn(n), edgeWeightsOut(n), edgeLevelsIn(n), edgeLevelsOut(n) {
+    EdgeHierarchyGraph(int n) : n(n), neighborsIn(n), neighborsOut(n), edgeWeightsIn(n), edgeWeightsOut(n), edgeLevelsIn(n), edgeLevelsOut(n) {
 
     }
 

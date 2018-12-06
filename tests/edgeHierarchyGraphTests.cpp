@@ -1,5 +1,5 @@
 /*******************************************************************************
- * tests/graphTests.cpp
+ * tests/edgeHierarchyGraphTests.cpp
  *
  * Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
  *
@@ -8,10 +8,10 @@
 
 #include <gtest/gtest.h>
 
-#include "graph.h"
+#include "edgeHierarchyGraph.h"
 
-TEST(GraphTest, hasCorrectSizeNoEdges) {
-    Graph g(5);
+TEST(EdgeHierarchyGraphTest, hasCorrectSizeNoEdges) {
+    EdgeHierarchyGraph g(5);
     EXPECT_EQ(g.getNumberOfNodes(), 5);
     for(NODE_T i = 0; i< 5; ++i) {
         EXPECT_EQ(g.getInDegree(i), 0);
@@ -20,8 +20,8 @@ TEST(GraphTest, hasCorrectSizeNoEdges) {
 }
 
 
-TEST(GraphTest, AddEdgeDegree) {
-    Graph g(5);
+TEST(EdgeHierarchyGraphTest, AddEdgeDegree) {
+    EdgeHierarchyGraph g(5);
     g.addEdge(1, 2, 1);
     g.addEdge(2, 1, 1);
     g.addEdge(2, 3, 1);
@@ -45,8 +45,8 @@ TEST(GraphTest, AddEdgeDegree) {
 }
 
 
-TEST(GraphTest, AddEdgeHasEdge) {
-    Graph g(5);
+TEST(EdgeHierarchyGraphTest, AddEdgeHasEdge) {
+    EdgeHierarchyGraph g(5);
     g.addEdge(1, 2, 1);
     g.addEdge(2, 1, 1);
     g.addEdge(2, 3, 1);
@@ -62,8 +62,8 @@ TEST(GraphTest, AddEdgeHasEdge) {
     EXPECT_FALSE(g.hasEdge(0,0));
 }
 
-TEST(GraphTest, ForAllNeighbors) {
-    Graph g(5);
+TEST(EdgeHierarchyGraphTest, ForAllNeighbors) {
+    EdgeHierarchyGraph g(5);
     g.addEdge(1, 2, 1);
     g.addEdge(2, 3, 2);
     g.addEdge(2, 1, 4);
@@ -119,8 +119,8 @@ TEST(GraphTest, ForAllNeighbors) {
     }
 }
 
-TEST(GraphTest, ForAllNodes) {
-    Graph g(5);
+TEST(EdgeHierarchyGraphTest, ForAllNodes) {
+    EdgeHierarchyGraph g(5);
 
     vector<NODE_T> expected({0, 1, 2, 3, 4});
 
@@ -138,8 +138,8 @@ TEST(GraphTest, ForAllNodes) {
     }
 }
 
-TEST(GraphTest, EdgeLevels) {
-    Graph g(3);
+TEST(EdgeHierarchyGraphTest, EdgeLevels) {
+    EdgeHierarchyGraph g(3);
 
     g.addEdge(0, 1, 4);
     g.addEdge(1, 2, 3);
