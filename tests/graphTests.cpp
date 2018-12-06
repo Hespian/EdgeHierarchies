@@ -22,10 +22,10 @@ TEST(GraphTest, hasCorrectSizeNoEdges) {
 
 TEST(GraphTest, AddEdgeDegree) {
     Graph g(5);
-    g.addEdge(1,2);
-    g.addEdge(2,1);
-    g.addEdge(2,3);
-    g.addEdge(4,3);
+    g.addEdge(1, 2, 1);
+    g.addEdge(2, 1, 1);
+    g.addEdge(2, 3, 1);
+    g.addEdge(4, 3, 1);
 
 
     EXPECT_EQ(g.getInDegree(0), 0);
@@ -47,10 +47,10 @@ TEST(GraphTest, AddEdgeDegree) {
 
 TEST(GraphTest, AddEdgeHasEdge) {
     Graph g(5);
-    g.addEdge(1,2);
-    g.addEdge(2,1);
-    g.addEdge(2,3);
-    g.addEdge(4,3);
+    g.addEdge(1, 2, 1);
+    g.addEdge(2, 1, 1);
+    g.addEdge(2, 3, 1);
+    g.addEdge(4, 3, 1);
 
 
     EXPECT_TRUE(g.hasEdge(1,2));
@@ -64,29 +64,29 @@ TEST(GraphTest, AddEdgeHasEdge) {
 
 TEST(GraphTest, ForAllNeighbors) {
     Graph g(5);
-    g.addEdge(1,2);
-    g.addEdge(2,3);
-    g.addEdge(2,1);
-    g.addEdge(4,3);
+    g.addEdge(1, 2, 1);
+    g.addEdge(2, 3, 2);
+    g.addEdge(2, 1, 4);
+    g.addEdge(4, 3, 3);
 
-    vector<vector<NODE_T>> expectedNeighborsIn(5);
-    expectedNeighborsIn[1].push_back(2);
-    expectedNeighborsIn[2].push_back(1);
-    expectedNeighborsIn[3].push_back(2);
-    expectedNeighborsIn[3].push_back(4);
+    vector<vector<pair<NODE_T, EDGEWEIGHT_T>>> expectedNeighborsIn(5);
+    expectedNeighborsIn[1].push_back(make_pair(2, 4));
+    expectedNeighborsIn[2].push_back(make_pair(1, 1));
+    expectedNeighborsIn[3].push_back(make_pair(2, 2));
+    expectedNeighborsIn[3].push_back(make_pair(4, 3));
 
 
-    vector<vector<NODE_T>> expectedNeighborsOut(5);
-    expectedNeighborsOut[1].push_back(2);
-    expectedNeighborsOut[2].push_back(1);
-    expectedNeighborsOut[2].push_back(3);
-    expectedNeighborsOut[4].push_back(3);
+    vector<vector<pair<NODE_T, EDGEWEIGHT_T>>> expectedNeighborsOut(5);
+    expectedNeighborsOut[1].push_back(make_pair(2, 1));
+    expectedNeighborsOut[2].push_back(make_pair(1, 4));
+    expectedNeighborsOut[2].push_back(make_pair(3, 2));
+    expectedNeighborsOut[4].push_back(make_pair(3, 3));
 
-    vector<vector<NODE_T>> actualNeighborsIn(5);
+    vector<vector<pair<NODE_T, EDGEWEIGHT_T>>> actualNeighborsIn(5);
     for(NODE_T u = 0; u < g.getNumberOfNodes(); ++u) {
         g.forAllNeighborsIn(u,
-                            [&] (NODE_T v){
-                                actualNeighborsIn[u].push_back(v);
+                            [&] (NODE_T v, EDGEWEIGHT_T weight){
+                                actualNeighborsIn[u].push_back(make_pair(v, weight));
                             });
     }
 
@@ -100,11 +100,11 @@ TEST(GraphTest, ForAllNeighbors) {
         }
     }
 
-    vector<vector<NODE_T>> actualNeighborsOut(5);
+    vector<vector<pair<NODE_T, EDGEWEIGHT_T>>> actualNeighborsOut(5);
     for(NODE_T u = 0; u < g.getNumberOfNodes(); ++u) {
         g.forAllNeighborsOut(u,
-                             [&] (NODE_T v){
-                                 actualNeighborsOut[u].push_back(v);
+                             [&] (NODE_T v, EDGEWEIGHT_T weight){
+                                 actualNeighborsOut[u].push_back(make_pair(v, weight));
                              });
     }
 
@@ -141,9 +141,9 @@ TEST(GraphTest, ForAllNodes) {
 TEST(GraphTest, EdgeLevels) {
     Graph g(3);
 
-    g.addEdge(0,1);
-    g.addEdge(1,2);
-    g.addEdge(1,0);
+    g.addEdge(0, 1, 4);
+    g.addEdge(1, 2, 3);
+    g.addEdge(1, 0, 1);
 
     g.setEdgeLevel(1, 2, 1);
     g.setEdgeLevel(1, 0, 2);
@@ -152,57 +152,57 @@ TEST(GraphTest, EdgeLevels) {
     EXPECT_EQ(g.getEdgeLevel(1, 2), 1);
     EXPECT_EQ(g.getEdgeLevel(1, 0), 2);
 
-    vector<pair<NODE_T, EDGELEVEL_T>> result;
+    vector<tuple<NODE_T, EDGELEVEL_T, EDGEWEIGHT_T>> result;
 
     // Outgoing edges
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(0, 0, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsOutWithHighLevel(0, 0, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], make_pair(1u, EDGELEVEL_INFINIY));
+    EXPECT_EQ(result[0], make_tuple(1u, EDGELEVEL_INFINIY, 4u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsOutWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], make_pair(1u, EDGELEVEL_INFINIY));
+    EXPECT_EQ(result[0], make_tuple(1u, EDGELEVEL_INFINIY, 4u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 1, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsOutWithHighLevel(1, 1, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     ASSERT_GE(result.size(), 2);
     EXPECT_EQ(result.size(), 2);
     sort(result.begin(), result.end());
-    EXPECT_EQ(result[0], make_pair(0u, 2u));
-    EXPECT_EQ(result[1], make_pair(2u, 1u));
+    EXPECT_EQ(result[0], make_tuple(0u, 2u, 1u));
+    EXPECT_EQ(result[1], make_tuple(2u, 1u, 3u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 2, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsOutWithHighLevel(1, 2, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], make_pair(0u, 2u));
+    EXPECT_EQ(result[0], make_tuple(0u, 2u, 1u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 3, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsOutWithHighLevel(1, 3, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     EXPECT_EQ(result.size(), 0);
 
     // Incoming edges
     result.clear();
-    g.forAllNeighborsInWithHighLevel(0, 1, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsInWithHighLevel(0, 1, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], make_pair(1u, 2u));
+    EXPECT_EQ(result[0], make_tuple(1u, 2u, 1u));
 
     result.clear();
-    g.forAllNeighborsInWithHighLevel(0, 2, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsInWithHighLevel(0, 2, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], make_pair(1u, 2u));
+    EXPECT_EQ(result[0], make_tuple(1u, 2u, 1u));
 
     result.clear();
-    g.forAllNeighborsInWithHighLevel(0, 3, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsInWithHighLevel(0, 3, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     EXPECT_EQ(result.size(), 0);
 
     result.clear();
-    g.forAllNeighborsInWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    g.forAllNeighborsInWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); });
     EXPECT_EQ(result.size(), 0);
 }

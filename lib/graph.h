@@ -16,7 +16,7 @@ using namespace std;
 
 class Graph {
 public:
-    Graph(int n) : n(n), neighborsIn(n), neighborsOut(n), edgeLevelsIn(n), edgeLevelsOut(n) {
+    Graph(int n) : n(n), neighborsIn(n), neighborsOut(n), edgeWeightsIn(n), edgeWeightsOut(n), edgeLevelsIn(n), edgeLevelsOut(n) {
 
     }
 
@@ -32,10 +32,12 @@ public:
         return neighborsOut[v].size();
     }
 
-    void addEdge(NODE_T u, NODE_T v) {
+    void addEdge(NODE_T u, NODE_T v, EDGEWEIGHT_T weight) {
         neighborsOut[u].push_back(v);
+        edgeWeightsOut[u].push_back(weight);
         edgeLevelsOut[u].push_back(EDGELEVEL_INFINIY);
         neighborsIn[v].push_back(u);
+        edgeWeightsIn[v].push_back(weight);
         edgeLevelsIn[v].push_back(EDGELEVEL_INFINIY);
     }
 
@@ -74,15 +76,15 @@ public:
 
     template<typename F>
     void forAllNeighborsIn(NODE_T v, F &&callback) {
-        for(auto neighbor: neighborsIn[v]) {
-            callback(neighbor);
+        for(int i = 0; i < neighborsIn[v].size(); ++i) {
+            callback(neighborsIn[v][i], edgeWeightsIn[v][i]);
         }
     }
 
     template<typename F>
     void forAllNeighborsOut(NODE_T v, F &&callback) {
-        for(auto neighbor: neighborsOut[v]) {
-            callback(neighbor);
+        for(int i = 0; i < neighborsOut[v].size(); ++i) {
+            callback(neighborsOut[v][i], edgeWeightsOut[v][i]);
         }
     }
 
@@ -91,7 +93,7 @@ public:
     void forAllNeighborsInWithHighLevel(NODE_T v, EDGELEVEL_T levelThreshold, F &&callback) {
         for(int i = 0; i < neighborsIn[v].size(); ++i) {
             if(edgeLevelsIn[v][i] >= levelThreshold) {
-                callback(neighborsIn[v][i], edgeLevelsIn[v][i]);
+                callback(neighborsIn[v][i], edgeLevelsIn[v][i], edgeWeightsIn[v][i]);
             }
         }
     }
@@ -100,7 +102,7 @@ public:
     void forAllNeighborsOutWithHighLevel(NODE_T v, EDGELEVEL_T levelThreshold, F &&callback) {
         for(int i = 0; i < neighborsOut[v].size(); ++i) {
             if(edgeLevelsOut[v][i] >= levelThreshold) {
-                callback(neighborsOut[v][i], edgeLevelsOut[v][i]);
+                callback(neighborsOut[v][i], edgeLevelsOut[v][i], edgeWeightsOut[v][i]);
             }
         }
     }
@@ -117,7 +119,9 @@ public:
 protected:
     int n;
     vector<vector<NODE_T>> neighborsOut;
+    vector<vector<EDGEWEIGHT_T>> edgeWeightsOut;
     vector<vector<EDGELEVEL_T>> edgeLevelsOut;
     vector<vector<NODE_T>> neighborsIn;
+    vector<vector<EDGEWEIGHT_T>> edgeWeightsIn;
     vector<vector<EDGELEVEL_T>> edgeLevelsIn;
 };
