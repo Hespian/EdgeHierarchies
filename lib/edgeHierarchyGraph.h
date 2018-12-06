@@ -16,7 +16,7 @@ using namespace std;
 
 class EdgeHierarchyGraph {
 public:
-    EdgeHierarchyGraph(int n) : n(n), neighborsIn(n), neighborsOut(n), edgeWeightsIn(n), edgeWeightsOut(n), edgeLevelsIn(n), edgeLevelsOut(n) {
+    EdgeHierarchyGraph(NODE_T n) : n(n), neighborsOut(n), edgeWeightsOut(n), edgeLevelsOut(n), neighborsIn(n), edgeWeightsIn(n), edgeLevelsIn(n) {
 
     }
 
@@ -42,14 +42,14 @@ public:
     }
 
     void setEdgeLevel(NODE_T u, NODE_T v, EDGELEVEL_T level) {
-        for(int i = 0; i < neighborsOut[u].size(); ++i) {
+        for(size_t i = 0; i < neighborsOut[u].size(); ++i) {
             if(neighborsOut[u][i] == v) {
                 edgeLevelsOut[u][i] = level;
                 break;
             }
         }
 
-        for(int i = 0; i < neighborsIn[v].size(); ++i) {
+        for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
             if(neighborsIn[v][i] == u) {
                 edgeLevelsIn[v][i] = level;
                 break;
@@ -58,11 +58,12 @@ public:
     }
 
     EDGELEVEL_T getEdgeLevel(NODE_T u, NODE_T v) {
-        for(int i = 0; i < neighborsOut[u].size(); ++i) {
+        for(size_t i = 0; i < neighborsOut[u].size(); ++i) {
             if(neighborsOut[u][i] == v) {
                 return edgeLevelsOut[u][i];
             }
         }
+        assert(false);
     }
 
     bool hasEdge(NODE_T u, NODE_T v) {
@@ -76,14 +77,14 @@ public:
 
     template<typename F>
     void forAllNeighborsIn(NODE_T v, F &&callback) {
-        for(int i = 0; i < neighborsIn[v].size(); ++i) {
+        for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
             callback(neighborsIn[v][i], edgeWeightsIn[v][i]);
         }
     }
 
     template<typename F>
     void forAllNeighborsOut(NODE_T v, F &&callback) {
-        for(int i = 0; i < neighborsOut[v].size(); ++i) {
+        for(size_t i = 0; i < neighborsOut[v].size(); ++i) {
             callback(neighborsOut[v][i], edgeWeightsOut[v][i]);
         }
     }
@@ -91,7 +92,7 @@ public:
 
     template<typename F>
     void forAllNeighborsInWithHighLevel(NODE_T v, EDGELEVEL_T levelThreshold, F &&callback) {
-        for(int i = 0; i < neighborsIn[v].size(); ++i) {
+        for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
             if(edgeLevelsIn[v][i] >= levelThreshold) {
                 callback(neighborsIn[v][i], edgeLevelsIn[v][i], edgeWeightsIn[v][i]);
             }
@@ -100,7 +101,7 @@ public:
 
     template<typename F>
     void forAllNeighborsOutWithHighLevel(NODE_T v, EDGELEVEL_T levelThreshold, F &&callback) {
-        for(int i = 0; i < neighborsOut[v].size(); ++i) {
+        for(size_t i = 0; i < neighborsOut[v].size(); ++i) {
             if(edgeLevelsOut[v][i] >= levelThreshold) {
                 callback(neighborsOut[v][i], edgeLevelsOut[v][i], edgeWeightsOut[v][i]);
             }
@@ -109,7 +110,7 @@ public:
 
     template<typename F>
     void forAllNodes(F &&callback) {
-        for(int v = 0; v < n; ++v) {
+        for(NODE_T v = 0; v < n; ++v) {
             callback(v);
         }
     }
@@ -117,7 +118,7 @@ public:
 /******************************************************************************/
 
 protected:
-    int n;
+    NODE_T n;
     vector<vector<NODE_T>> neighborsOut;
     vector<vector<EDGEWEIGHT_T>> edgeWeightsOut;
     vector<vector<EDGELEVEL_T>> edgeLevelsOut;
