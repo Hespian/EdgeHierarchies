@@ -152,35 +152,58 @@ TEST(GraphTest, EdgeLevels) {
     EXPECT_EQ(g.getEdgeLevel(1, 2), 1);
     EXPECT_EQ(g.getEdgeLevel(1, 0), 2);
 
-    vector<NODE_T> result;
+    vector<pair<NODE_T, EDGELEVEL_T>> result;
 
+    // Outgoing edges
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(0, 0, [&] (NODE_T v) { result.push_back(v); });
+    g.forAllNeighborsOutWithHighLevel(0, 0, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], 1);
+    EXPECT_EQ(result[0], make_pair(1u, EDGELEVEL_INFINIY));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v) { result.push_back(v); });
+    g.forAllNeighborsOutWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], 1);
+    EXPECT_EQ(result[0], make_pair(1u, EDGELEVEL_INFINIY));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 1, [&] (NODE_T v) { result.push_back(v); });
+    g.forAllNeighborsOutWithHighLevel(1, 1, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
     ASSERT_GE(result.size(), 2);
     EXPECT_EQ(result.size(), 2);
     sort(result.begin(), result.end());
-    EXPECT_EQ(result[0], 0);
-    EXPECT_EQ(result[1], 2);
+    EXPECT_EQ(result[0], make_pair(0u, 2u));
+    EXPECT_EQ(result[1], make_pair(2u, 1u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 2, [&] (NODE_T v) { result.push_back(v); });
+    g.forAllNeighborsOutWithHighLevel(1, 2, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], 0);
+    EXPECT_EQ(result[0], make_pair(0u, 2u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 3, [&] (NODE_T v) { result.push_back(v); });
+    g.forAllNeighborsOutWithHighLevel(1, 3, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
     EXPECT_EQ(result.size(), 0);
+
+    // Incoming edges
+    result.clear();
+    g.forAllNeighborsInWithHighLevel(0, 1, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    ASSERT_GE(result.size(), 1);
+    EXPECT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0], make_pair(1u, 2u));
+
+    result.clear();
+    g.forAllNeighborsInWithHighLevel(0, 2, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    ASSERT_GE(result.size(), 1);
+    EXPECT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0], make_pair(1u, 2u));
+
+    result.clear();
+    g.forAllNeighborsInWithHighLevel(0, 3, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    EXPECT_EQ(result.size(), 0);
+
+    result.clear();
+    g.forAllNeighborsInWithHighLevel(0, EDGELEVEL_INFINIY, [&] (NODE_T v, EDGELEVEL_T level) { result.push_back(make_pair(v, level)); });
+    EXPECT_EQ(result.size(), 0);
+
 }

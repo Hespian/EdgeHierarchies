@@ -91,7 +91,7 @@ public:
     void forAllNeighborsInWithHighLevel(NODE_T v, EDGELEVEL_T levelThreshold, F &&callback) {
         for(int i = 0; i < neighborsIn[v].size(); ++i) {
             if(edgeLevelsIn[v][i] >= levelThreshold) {
-                callback(neighborsIn[v][i]);
+                callback(neighborsIn[v][i], edgeLevelsIn[v][i]);
             }
         }
     }
@@ -100,7 +100,7 @@ public:
     void forAllNeighborsOutWithHighLevel(NODE_T v, EDGELEVEL_T levelThreshold, F &&callback) {
         for(int i = 0; i < neighborsOut[v].size(); ++i) {
             if(edgeLevelsOut[v][i] >= levelThreshold) {
-                callback(neighborsOut[v][i]);
+                callback(neighborsOut[v][i], edgeLevelsOut[v][i]);
             }
         }
     }
