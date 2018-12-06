@@ -8,9 +8,14 @@
 
 include_directories(SYSTEM ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-add_executable(edgeHierarchyGraphTest "edgeHierarchyGraphTests.cpp")
-target_compile_options(edgeHierarchyGraphTest PRIVATE -Wall)
-target_link_libraries(edgeHierarchyGraphTest gtest gtest_main)
-add_test(edgeHierarchyGraphTest edgeHierarchyGraphTest)
+function(buildAndAddTest TESTFILE)
+  string(REPLACE ".cpp" "" TESTNAME "${TESTFILE}")
+  add_executable(${TESTNAME} ${TESTFILE})
+  target_compile_options(${TESTNAME} PRIVATE -Wall)
+  target_link_libraries(${TESTNAME} gtest gtest_main)
+  add_test(${TESTNAME} ${TESTNAME})
+endfunction()
 
+buildAndAddTest("edgeHierarchyGraphTests.cpp")
+buildAndAddTest("edgeHierarchyQueryTests.cpp")
 

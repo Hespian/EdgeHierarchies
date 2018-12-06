@@ -1,3 +1,6 @@
 [submodule "googletest"]
 	path = googletest
 	url = git@github.com:abseil/googletest.git
+[submodule "extern/RoutingKit"]
+	path = extern/RoutingKit
+	url = git@github.com:RoutingKit/RoutingKit.git

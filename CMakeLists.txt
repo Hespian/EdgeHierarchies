@@ -27,6 +27,7 @@ add_subdirectory(googletest/googletest)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/lib
+  ${PROJECT_SOURCE_DIR}/extern/RoutingKit/include
   )
 
 # descend into apps
