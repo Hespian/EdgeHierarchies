@@ -64,6 +64,17 @@ TEST(EdgeHierarchyGraphTest, AddEdgeHasEdge) {
     EXPECT_FALSE(g.hasEdge(0,0));
 }
 
+TEST(EdgeHierarchyGraphTest, AddEdgeWeight) {
+    EdgeHierarchyGraph g(4);
+    g.addEdge(1, 2, 1);
+    g.addEdge(2, 1, 3);
+    g.addEdge(2, 3, 2);
+
+    EXPECT_EQ(g.getEdgeWeight(1, 2), 1);
+    EXPECT_EQ(g.getEdgeWeight(2, 1), 3);
+    EXPECT_EQ(g.getEdgeWeight(2, 3), 2);
+}
+
 TEST(EdgeHierarchyGraphTest, ForAllNeighbors) {
     EdgeHierarchyGraph g(5);
     g.addEdge(1, 2, 1);

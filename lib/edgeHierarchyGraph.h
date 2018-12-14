@@ -80,6 +80,15 @@ public:
         return false;
     }
 
+    EDGEWEIGHT_T getEdgeWeight(NODE_T u, NODE_T v) {
+        for(size_t i = 0; i < neighborsOut[u].size(); ++i) {
+            if(neighborsOut[u][i] == v) {
+                return edgeWeightsOut[u][i];
+            }
+        }
+        assert(false);
+    }
+
     template<typename F>
     void forAllNeighborsIn(NODE_T v, F &&callback) {
         for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
