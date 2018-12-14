@@ -115,7 +115,7 @@ protected:
         auto relaxFunc = [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) {
             EDGEWEIGHT_T distanceV = distanceU + weight;
             if(wasPushedCurrent.is_set(v)) {
-                if(distanceV < tentativeDistanceForward[v]) {
+                if(distanceV < tentativeDistanceCurrent[v]) {
                     PQCurrent.decrease_key({v, distanceV});
                     tentativeDistanceCurrent[v] = distanceV;
                     levelCurrent[v] = level;

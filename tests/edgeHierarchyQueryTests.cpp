@@ -6,6 +6,8 @@
  * All rights reserved.
  ******************************************************************************/
 
+#include <cmath>
+
 #include <gtest/gtest.h>
 
 #include "edgeHierarchyGraph.h"
@@ -140,4 +142,37 @@ TEST(EdgeHierarchyQueryTests, OnePossibleOneImpossible) {
 
     EDGEWEIGHT_T distance = query.getDistance(0, 4);
     EXPECT_EQ(distance, 6);
+}
+
+TEST(EdgeHierarchyGraphTest, LongBidirectedPath) {
+    EdgeHierarchyGraph g(10);
+    g.addEdge(0, 1, 1);
+    g.addEdge(1, 2, 1);
+    g.addEdge(2, 3, 1);
+    g.addEdge(3, 4, 1);
+    g.addEdge(4, 5, 1);
+    g.addEdge(5, 6, 1);
+    g.addEdge(6, 7, 1);
+    g.addEdge(7, 8, 1);
+    g.addEdge(8, 9, 1);
+
+
+    g.addEdge(1, 0, 1);
+    g.addEdge(2, 1, 1);
+    g.addEdge(3, 2, 1);
+    g.addEdge(4, 3, 1);
+    g.addEdge(5, 4, 1);
+    g.addEdge(6, 5, 1);
+    g.addEdge(7, 6, 1);
+    g.addEdge(8, 7, 1);
+    g.addEdge(9, 8, 1);
+
+    EdgeHierarchyQuery query(g);
+
+    for(int u = 0; u < 10; ++u){
+        for(int v = 0; v < 10; ++v){
+            EDGEWEIGHT_T distance = std::abs(u - v);
+            EXPECT_EQ(query.getDistance(u, v), distance);
+        }
+    }
 }
