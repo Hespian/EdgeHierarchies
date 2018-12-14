@@ -11,7 +11,7 @@
 #include "edgeHierarchyGraph.h"
 #include "edgeHierarchyQuery.h"
 
-TEST(EdgeHierarchyQueryTests, getDistanceNoLevels) {
+TEST(EdgeHierarchyQueryTests, GetDistanceNoLevels) {
     //          ---3---
     //         |       |
     //         v       |
