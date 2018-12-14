@@ -16,12 +16,16 @@ using namespace std;
 
 class EdgeHierarchyGraph {
 public:
-    EdgeHierarchyGraph(NODE_T n) : n(n), neighborsOut(n), edgeWeightsOut(n), edgeLevelsOut(n), neighborsIn(n), edgeWeightsIn(n), edgeLevelsIn(n) {
+    EdgeHierarchyGraph(NODE_T n) : n(n), m(0), neighborsOut(n), edgeWeightsOut(n), edgeLevelsOut(n), neighborsIn(n), edgeWeightsIn(n), edgeLevelsIn(n) {
 
     }
 
     NODE_T getNumberOfNodes() {
         return n;
+    }
+
+    EDGECOUNT_T getNumberOfEdges() {
+        return m;
     }
 
     NODE_T getInDegree(NODE_T v) {
@@ -33,6 +37,7 @@ public:
     }
 
     void addEdge(NODE_T u, NODE_T v, EDGEWEIGHT_T weight) {
+        ++m;
         neighborsOut[u].push_back(v);
         edgeWeightsOut[u].push_back(weight);
         edgeLevelsOut[u].push_back(EDGELEVEL_INFINIY);
@@ -119,6 +124,7 @@ public:
 
 protected:
     NODE_T n;
+    EDGECOUNT_T m;
     vector<vector<NODE_T>> neighborsOut;
     vector<vector<EDGEWEIGHT_T>> edgeWeightsOut;
     vector<vector<EDGELEVEL_T>> edgeLevelsOut;

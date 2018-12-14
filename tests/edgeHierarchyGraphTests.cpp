@@ -13,6 +13,7 @@
 TEST(EdgeHierarchyGraphTest, hasCorrectSizeNoEdges) {
     EdgeHierarchyGraph g(5);
     EXPECT_EQ(g.getNumberOfNodes(), 5);
+    EXPECT_EQ(g.getNumberOfEdges(), 0);
     for(NODE_T i = 0; i< 5; ++i) {
         EXPECT_EQ(g.getInDegree(i), 0);
         EXPECT_EQ(g.getOutDegree(i), 0);
@@ -27,6 +28,7 @@ TEST(EdgeHierarchyGraphTest, AddEdgeDegree) {
     g.addEdge(2, 3, 1);
     g.addEdge(4, 3, 1);
 
+    EXPECT_EQ(g.getNumberOfEdges(), 4);
 
     EXPECT_EQ(g.getInDegree(0), 0);
     EXPECT_EQ(g.getOutDegree(0), 0);
