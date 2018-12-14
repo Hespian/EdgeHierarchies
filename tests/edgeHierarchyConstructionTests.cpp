@@ -138,8 +138,8 @@ TEST(EdgeHierarchyConstructionTest, RunSimple) {
     // Sanity check
     EXPECT_EQ(originalGraph.getNumberOfEdges(), 18);
 
-    for(NODE_T u = 0; u < 4; ++u){
-        for(NODE_T v = 0; v < 4; ++v){
+    for(NODE_T u = 0; u < 10; ++u){
+        for(NODE_T v = 0; v < 10; ++v){
             EXPECT_EQ(query.getDistance(u, v), originalGraphQuery.getDistance(u,v));
         }
     }
