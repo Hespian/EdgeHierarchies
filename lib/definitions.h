@@ -16,3 +16,5 @@
 #define EDGELEVEL_T uint32_t
 #define EDGECOUNT_T EDGELEVEL_T
 #define EDGELEVEL_INFINIY std::numeric_limits<EDGELEVEL_T>::max()
+#define EDGEID_T uint64_t
+#define EDGEID_EMPTY_KEY std::numeric_limits<EDGEID_T>::max()

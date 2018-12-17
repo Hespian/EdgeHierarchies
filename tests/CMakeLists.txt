@@ -19,4 +19,5 @@ endfunction()
 buildAndAddTest("edgeHierarchyGraphTests.cpp")
 buildAndAddTest("edgeHierarchyQueryTests.cpp")
 buildAndAddTest("edgeHierarchyConstructionTests.cpp")
+buildAndAddTest("edgeIdCreatorTests.cpp")
 
