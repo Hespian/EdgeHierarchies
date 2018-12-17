@@ -8,6 +8,8 @@
 
 #pragma once
 #include <cstdint>
+#include <utility>
+#include <vector>
 
 #include <sparsehash/sparse_hash_map>
 
@@ -22,10 +24,17 @@ public:
         EDGEID_T singeValueEdge = getSingeValueEdge(u, v);
         if(edgeIdMapper.find(singeValueEdge) == edgeIdMapper.end()) {
             edgeIdMapper[singeValueEdge] = numEdges++;
+            edges.push_back(std::make_pair(u, v));
+            assert(edges.size() == numEdges);
+            assert(edges[edgeIdMapper[singeValueEdge]] == std::make_pair(u, v));
         }
         return edgeIdMapper[singeValueEdge];
     }
 
+    std::pair<NODE_T, NODE_T> getEdgeFromId(EDGEID_T id) {
+        assert(id < numEdges);
+        return edges[id];
+    }
 
 protected:
     EDGEID_T getSingeValueEdge(NODE_T u, NODE_T v) {
@@ -34,4 +43,5 @@ protected:
 
     EDGEID_T numEdges;
     google::sparse_hash_map<EDGEID_T, EDGEID_T> edgeIdMapper;
+    std::vector<std::pair<NODE_T, NODE_T>> edges;
 };
