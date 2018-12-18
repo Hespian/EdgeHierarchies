@@ -30,6 +30,9 @@ public:
         edgeQueue.push(make_pair(u, v));
     }
 
+    void updateEdge(NODE_T u, NODE_T v) {
+    }
+
     pair<NODE_T, NODE_T> getNextEdge() {
         auto nextEdge(edgeQueue.front());
         edgeQueue.pop();
