@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 #include "routingkit/timestamp_flag.h"
 
@@ -28,7 +29,11 @@ public:
         nodesRhs(maxNumberOfNodes, NODE_INVALID),
         nodesInverseLhs(maxNumberOfNodes, NODE_INVALID),
         nodesInverseRhs(maxNumberOfNodes, NODE_INVALID),
-        visited(maxNumberOfNodes) {
+        matchingPartnerLhs(maxNumberOfNodes, NODE_INVALID),
+        matchingPartnerRhs(maxNumberOfNodes, NODE_INVALID),
+        visited(maxNumberOfNodes),
+        markedLhs(maxNumberOfNodes, false),
+        markedRhs(maxNumberOfNodes, false) {
     }
 
     pair<vector<NODE_T>, vector<NODE_T>> getMinimumVertexCover(vector<pair<NODE_T, NODE_T>> &edges) {
@@ -36,14 +41,65 @@ public:
 
         findMaximumMatching();
 
+        markVertices();
+
+        pair<vector<NODE_T>, vector<NODE_T>> result;
+        for(NODE_T v = 0; v < nLhs; ++v) {
+            if(!markedLhs[v]) {
+                result.first.push_back(nodesInverseLhs[v]);
+            }
+        }
+        for(NODE_T v = 0; v < nRhs; ++v) {
+            if(markedRhs[v]) {
+                result.first.push_back(nodesInverseRhs[v]);
+            }
+        }
+
+        assert(NODE_T(count_if(matchingPartnerLhs.begin(), matchingPartnerLhs.begin() + nLhs, [] (NODE_T partner) { return partner != NODE_INVALID; })) == result.first.size() + result.second.size());
+
         cleanUp();
+
+        return result;
     }
 
 
+    NODE_T getMinimumVertexCoverSize(vector<pair<NODE_T, NODE_T>> &edges) {
+        buildLocalGraph(edges);
+
+        findMaximumMatching();
+
+        NODE_T size = count_if(matchingPartnerLhs.begin(), matchingPartnerLhs.begin() + nLhs, [] (NODE_T partner) { return partner != NODE_INVALID; });
+
+        cleanUp();
+        return size;
+    }
+
 
 protected:
-    bool augmentingPathStep(NODE_T u) {
+    void markVertices() {
+        visited.reset_all();
+        for(NODE_T u = 0; u < nLhs; ++u) {
+            if(matchingPartnerLhs[u] == NODE_INVALID) {
+                markedLhs[u] = true;
+                markVerticesStep(u);
+            }
+        }
+    }
 
+    void markVerticesStep(NODE_T u) {
+        markedLhs[u] = true;
+        for(NODE_T v : neighborsLhs[u]) {
+            if(markedRhs[v]) {
+                continue;
+            }
+            markedRhs[v] = true;
+            // This would be an augmenting path
+            assert(matchingPartnerRhs[v] != NODE_INVALID);
+            markVerticesStep(matchingPartnerRhs[v]);
+        }
+    }
+
+    bool augmentingPathStep(NODE_T u) {
         bool foundPath = false;
         for(NODE_T v : neighborsLhs[u]) {
             if(visited.is_set(v)) {
@@ -70,7 +126,7 @@ protected:
         do {
             visited.reset_all();
             foundPath = false;
-            for(int u = 0; u < nLhs; ++u) {
+            for(NODE_T u = 0; u < nLhs; ++u) {
                 if(matchingPartnerLhs[u] == NODE_INVALID) {
                     foundPath = augmentingPathStep(u);
                     if(foundPath) {
@@ -96,19 +152,21 @@ protected:
 
     void cleanUp() {
         for(NODE_T vLocal = 0; vLocal < nLhs; ++vLocal) {
-            vGlobal = nodesInverseLhs[vLocal];
+            NODE_T vGlobal = nodesInverseLhs[vLocal];
             neighborsLhs[vLocal].clear();
             nodesLhs[vGlobal] = NODE_INVALID;
             nodesInverseLhs[vLocal] = NODE_INVALID;
             matchingPartnerLhs[vLocal] = NODE_INVALID;
+            markedLhs[vLocal] = false;
         }
 
         for(NODE_T vLocal = 0; vLocal < nRhs; ++vLocal) {
-            vGlobal = nodesInverseRhs[vLocal];
+            NODE_T vGlobal = nodesInverseRhs[vLocal];
             neighborsRhs[vLocal].clear();
             nodesRhs[vGlobal] = NODE_INVALID;
             nodesInverseRhs[vLocal] = NODE_INVALID;
             matchingPartnerRhs[vLocal] = NODE_INVALID;
+            markedRhs[vLocal] = false;
         }
 
         nLhs = 0;
@@ -122,8 +180,9 @@ protected:
         vector<NODE_T> &nodesInverse = lhs ? nodesInverseLhs : nodesInverseRhs;
 
         if(nodes[globalNodeId] == NODE_INVALID) {
-            nodes[globalNodeId] = n++;
+            nodes[globalNodeId] = n;
             nodesInverse[n] = globalNodeId;
+            ++n;
         }
         return nodes[globalNodeId];
     }
@@ -140,4 +199,6 @@ protected:
     vector<NODE_T> matchingPartnerRhs;
     vector<NODE_T> augmentingPath;
     RoutingKit::TimestampFlags visited;
+    vector<NODE_T> markedLhs;
+    vector<NODE_T> markedRhs;
 };

@@ -11,7 +11,7 @@
 #include <limits>
 
 #define NODE_T uint32_t
-#define NODE_INVALID std::numeric_limits<NODE_T>::max();
+#define NODE_INVALID std::numeric_limits<NODE_T>::max()
 #define EDGEWEIGHT_T uint32_t
 #define EDGEWEIGHT_INFINITY numeric_limits<EDGEWEIGHT_T>::max()
 #define EDGELEVEL_T uint32_t
