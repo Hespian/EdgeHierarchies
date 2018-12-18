@@ -220,3 +220,12 @@ TEST(EdgeHierarchyGraphTest, EdgeLevels) {
     g.forAllNeighborsInWithHighLevel(0, EDGELEVEL_INFINIY, logEdges);
     EXPECT_EQ(result.size(), 0);
 }
+
+TEST(EdgeHierarchyGraphTest, DecreaseEdgeWeightDuplicate) {
+    EdgeHierarchyGraph g(2);
+    g.addEdge(0, 1, 5);
+
+    g.decreaseEdgeWeight(0, 1, 1);
+
+    EXPECT_EQ(g.getEdgeWeight(0, 1), 1);
+}

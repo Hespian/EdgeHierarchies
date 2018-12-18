@@ -37,6 +37,7 @@ public:
     }
 
     void addEdge(NODE_T u, NODE_T v, EDGEWEIGHT_T weight) {
+        assert(!hasEdge(u, v));
         ++m;
         neighborsOut[u].push_back(v);
         edgeWeightsOut[u].push_back(weight);
@@ -44,6 +45,24 @@ public:
         neighborsIn[v].push_back(u);
         edgeWeightsIn[v].push_back(weight);
         edgeLevelsIn[v].push_back(EDGELEVEL_INFINIY);
+    }
+
+    void decreaseEdgeWeight(NODE_T u, NODE_T v, EDGEWEIGHT_T weight) {
+        assert(hasEdge(u, v));
+        assert(getEdgeWeight(u, v) > weight);
+        for(size_t i = 0; i < neighborsOut[u].size(); ++i) {
+            if(neighborsOut[u][i] == v) {
+                edgeWeightsOut[u][i] = weight;
+                break;
+            }
+        }
+        for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
+            if(neighborsIn[v][i] == u) {
+                edgeWeightsIn[v][i] = weight;
+                return;
+            }
+        }
+        assert(false);
     }
 
     void setEdgeLevel(NODE_T u, NODE_T v, EDGELEVEL_T level) {
