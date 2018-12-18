@@ -144,3 +144,20 @@ TEST(EdgeHierarchyConstructionTest, RunSimple) {
         }
     }
 }
+
+TEST(EdgeHierarchyConstructionTest, NoSelfLoops) {
+    EdgeHierarchyGraph g(3);
+    g.addEdge(0, 1, 1);
+    g.addEdge(1, 2, 1);
+    g.addEdge(2, 0, 1);
+
+    EdgeHierarchyQuery query(g);
+
+    EdgeHierarchyConstruction<ArbitraryOrderEdgeRanker> construction(g, query);
+
+    construction.run();
+
+    EXPECT_FALSE(g.hasEdge(0, 0));
+    EXPECT_FALSE(g.hasEdge(1, 1));
+    EXPECT_FALSE(g.hasEdge(2, 2));
+}
