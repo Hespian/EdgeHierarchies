@@ -11,9 +11,9 @@
 #include <vector>
 #include <utility>
 
-template<bool decreaseEdgeWeights>
-vector<pair<NODE_T, NODE_T>> getShortestPathsLost(NODE_T u, NODE_T v, EDGEWEIGHT_T uVWeight, EdgeHierarchyGraph &g, EdgeHierarchyQuery &query) {
-    vector<pair<NODE_T, NODE_T>> result;
+template<bool returnEdgesToDecrease>
+pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> getShortestPathsLost(NODE_T u, NODE_T v, EDGEWEIGHT_T uVWeight, EdgeHierarchyGraph &g, EdgeHierarchyQuery &query) {
+    pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> result;
     g.forAllNeighborsInWithHighLevel(u, EDGELEVEL_INFINIY,
                                      [&] (NODE_T uPrime, EDGELEVEL_T uPrimeLevel, EDGEWEIGHT_T uPrimeWeight) {
                                          assert(uPrimeLevel == EDGELEVEL_INFINIY);
@@ -26,18 +26,18 @@ vector<pair<NODE_T, NODE_T>> getShortestPathsLost(NODE_T u, NODE_T v, EDGEWEIGHT
 
                                                                                if(distanceInQueryGraph > uPrimeVPrimeWeight) {
                                                                                    if(g.hasEdge(uPrime, v)) {
-                                                                                       if(decreaseEdgeWeights) {
-                                                                                           g.decreaseEdgeWeight(uPrime, v, uPrimeVWeight);
+                                                                                       if(returnEdgesToDecrease) {
+                                                                                           result.second.push_back(make_tuple(uPrime, v, uPrimeVWeight));
                                                                                        }
                                                                                    }
                                                                                    else if (g.hasEdge(u, vPrime)) {
-                                                                                       if(decreaseEdgeWeights) {
+                                                                                       if(returnEdgesToDecrease) {
                                                                                            EDGEWEIGHT_T uVPrimeWeight = uVWeight + vPrimeWeight;
-                                                                                           g.decreaseEdgeWeight(u, vPrime, uVPrimeWeight);
+                                                                                           result.second.push_back(make_tuple(u, vPrime, uVPrimeWeight));
                                                                                        }
                                                                                    }
                                                                                    else {
-                                                                                       result.push_back(make_pair(uPrime, vPrime));
+                                                                                       result.first.push_back(make_pair(uPrime, vPrime));
                                                                                    }
                                                                                }
                                                                            });

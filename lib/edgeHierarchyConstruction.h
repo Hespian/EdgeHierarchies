@@ -28,8 +28,13 @@ public:
         assert(g.getEdgeLevel(u,v) == EDGELEVEL_INFINIY);
         g.setEdgeLevel(u, v, level);
         EDGEWEIGHT_T uVWeight = g.getEdgeWeight(u, v);
-        vector<pair<NODE_T, NODE_T>> shortestPathsLost = getShortestPathsLost<true>(u, v, uVWeight, g, query);
-        auto shortcutVertices = bipartiteMVC.getMinimumVertexCover(shortestPathsLost);
+        pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> shortestPathsLost = getShortestPathsLost<true>(u, v, uVWeight, g, query);
+
+        for(auto edgeToDecrease : shortestPathsLost.second) {
+            g.decreaseEdgeWeight(get<0>(edgeToDecrease), get<1>(edgeToDecrease), get<2>(edgeToDecrease));
+            edgeRanker.updateEdge(get<0>(edgeToDecrease), get<1>(edgeToDecrease));
+        }
+        auto shortcutVertices = bipartiteMVC.getMinimumVertexCover(shortestPathsLost.first);
 
         for(auto uPrime : shortcutVertices.first) {
             EDGEWEIGHT_T uPrimeVWeight = g.getEdgeWeight(uPrime, u) + uVWeight;
