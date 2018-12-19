@@ -36,7 +36,16 @@ public:
                                                                                    EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(uPrime, vPrime);
 
                                                                                    if(distanceInQueryGraph > uPrimeVPrimeWeight) {
-                                                                                       result.push_back(make_pair(uPrime, vPrime));
+                                                                                       if(g.hasEdge(uPrime, v)) {
+                                                                                           g.decreaseEdgeWeight(uPrime, v, uPrimeVWeight);
+                                                                                       }
+                                                                                       else if (g.hasEdge(u, vPrime)) {
+                                                                                           EDGEWEIGHT_T uVPrimeWeight = uVWeight + vPrimeWeight;
+                                                                                           g.decreaseEdgeWeight(u, vPrime, uVPrimeWeight);
+                                                                                       }
+                                                                                       else {
+                                                                                           result.push_back(make_pair(uPrime, vPrime));
+                                                                                       }
                                                                                    }
                                                                                });
                                          });
