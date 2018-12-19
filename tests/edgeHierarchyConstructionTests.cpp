@@ -164,3 +164,56 @@ TEST(EdgeHierarchyConstructionTest, NoSelfLoops) {
     EXPECT_FALSE(g.hasEdge(1, 1));
     EXPECT_FALSE(g.hasEdge(2, 2));
 }
+
+class Return01EdgeRanker {
+public:
+    Return01EdgeRanker(EdgeHierarchyGraph &g) : hasReturned(false) {
+    }
+
+    void addEdge(NODE_T u, NODE_T v) {
+    }
+
+    void updateEdge(NODE_T u, NODE_T v) {
+    }
+
+    pair<NODE_T, NODE_T> getNextEdge() {
+        hasReturned = true;
+        return make_pair(0u, 1u);
+    }
+
+    bool hasNextEdge() {
+        return !hasReturned;
+    }
+private:
+    bool hasReturned;
+};
+
+TEST(EdgeHierarchyConstructionTest, NoDuplicateEdge) {
+    // If failing, this test should trigger an assertion when inserting a parallel edge
+    {
+        EdgeHierarchyGraph g(4);
+        g.addEdge(0, 1, 1);
+        g.addEdge(2, 1, 4);
+        g.addEdge(2, 0, 1);
+        g.addEdge(1, 3, 1);
+
+        EdgeHierarchyQuery query(g);
+
+        EdgeHierarchyConstruction<Return01EdgeRanker> construction(g, query);
+
+        construction.run();
+    }
+    {
+        EdgeHierarchyGraph g(4);
+        g.addEdge(0, 1, 1);
+        g.addEdge(1, 2, 1);
+        g.addEdge(2, 3, 1);
+        g.addEdge(1, 3, 4);
+
+        EdgeHierarchyQuery query(g);
+
+        EdgeHierarchyConstruction<Return01EdgeRanker> construction(g, query);
+
+        construction.run();
+    }
+}
