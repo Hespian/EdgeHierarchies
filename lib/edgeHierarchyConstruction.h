@@ -38,25 +38,13 @@ public:
 
         for(auto uPrime : shortcutVertices.first) {
             EDGEWEIGHT_T uPrimeVWeight = g.getEdgeWeight(uPrime, u) + uVWeight;
-            if(!g.hasEdge(uPrime, v)) {
-                g.addEdge(uPrime, v, uPrimeVWeight);
-                edgeRanker.addEdge(uPrime, v);
-            }
-            else {
-                g.decreaseEdgeWeight(uPrime, v, uPrimeVWeight);
-                edgeRanker.updateEdge(uPrime, v);
-            }
+            g.addEdge(uPrime, v, uPrimeVWeight);
+            edgeRanker.addEdge(uPrime, v);
         }
         for(auto vPrime : shortcutVertices.second) {
             EDGEWEIGHT_T uVPrimeWeight = uVWeight + g.getEdgeWeight(v, vPrime);
-            if(!g.hasEdge(u, vPrime)) {
-                g.addEdge(u, vPrime, uVPrimeWeight);
-                edgeRanker.addEdge(u, vPrime);
-            }
-            else {
-                g.decreaseEdgeWeight(u, vPrime, uVPrimeWeight);
-                edgeRanker.updateEdge(u, vPrime);
-            }
+            g.addEdge(u, vPrime, uVPrimeWeight);
+            edgeRanker.addEdge(u, vPrime);
         }
     }
 
