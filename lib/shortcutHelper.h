@@ -11,6 +11,7 @@
 #include <vector>
 #include <utility>
 
+// first: shortest paths lost; second: edges to decrease
 template<bool returnEdgesToDecrease>
 pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> getShortestPathsLost(NODE_T u, NODE_T v, EDGEWEIGHT_T uVWeight, EdgeHierarchyGraph &g, EdgeHierarchyQuery &query) {
     pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> result;
