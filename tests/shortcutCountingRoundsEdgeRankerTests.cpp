@@ -18,7 +18,7 @@ struct edgeHash {
     std::size_t operator()(const std::pair<NODE_T, NODE_T> &p) const {
         NODE_T u = p.first;
         NODE_T v = p.second;
-        return std::hash<NODE_T>()((1/2) * (u + v) * (u + v + 1) + v);
+        return std::hash<NODE_T>()((1.0/2) * (u + v) * (u + v + 1) + v);
     }
 };
 
