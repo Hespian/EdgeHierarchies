@@ -23,4 +23,5 @@ buildAndAddTest("edgeIdCreatorTests.cpp")
 buildAndAddTest("bipartiteMinimumVertexCoverTests.cpp")
 buildAndAddTest("arraySetTests.cpp")
 buildAndAddTest("shortcutHelperTests.cpp")
+buildAndAddTest("shortcutCountingRoundsEdgeRankerTests.cpp")
 
