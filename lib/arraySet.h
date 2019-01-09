@@ -52,7 +52,7 @@ public:
 
     void resize(T newSize) {
         assert(endPtr < newSize);
-        lookup.resize(newSize);
+        lookup.resize(newSize, std::numeric_limits<T>::max());
         elements.resize(newSize);
     }
 

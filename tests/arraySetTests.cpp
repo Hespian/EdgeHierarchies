@@ -26,6 +26,8 @@ TEST(ArraySetTest, SimpleTest) {
     as.insert(5);
     EXPECT_TRUE(as.contains(5));
 
+    EXPECT_FALSE(as.contains(19));
+
     EXPECT_FALSE(as.contains(1));
     as.insert(1);
     EXPECT_TRUE(as.contains(5));
