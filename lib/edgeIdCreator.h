@@ -39,7 +39,7 @@ public:
 protected:
     EDGEID_T getSingeValueEdge(NODE_T u, NODE_T v) {
         // Cantor pairing function
-        return (1/2) * (u + v) * (u + v + 1) + v;
+        return (1.0/2) * (u + v) * (u + v + 1) + v;
     }
 
     EDGEID_T numEdges;
