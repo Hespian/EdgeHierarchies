@@ -21,5 +21,6 @@ buildAndAddTest("edgeHierarchyQueryTests.cpp")
 buildAndAddTest("edgeHierarchyConstructionTests.cpp")
 buildAndAddTest("edgeIdCreatorTests.cpp")
 buildAndAddTest("bipartiteMinimumVertexCoverTests.cpp")
+buildAndAddTest("arraySetTests.cpp")
 buildAndAddTest("shortcutHelperTests.cpp")
 
