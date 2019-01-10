@@ -41,7 +41,12 @@ TEST(bipartiteMinimumVertexCoverTest, SimpleTest) {
 
     EXPECT_EQ(mvcTotal[1], 5);
 
-    EXPECT_EQ(mvc.second[0], 5);
+    if(mvc.second.size() == 1) {
+        EXPECT_TRUE(mvc.second[0] == 5);
+    }
+    else {
+        EXPECT_TRUE(mvc.second[0] == 5 || mvc.second[1] == 5);
+    }
 
 
     edges.clear();
