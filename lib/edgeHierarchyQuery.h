@@ -88,6 +88,10 @@ public:
                 makeStep<false>(shortestPathMeetingNode, shortestPathLength);
             }
             forward = !forward;
+
+            if(maximumDistance != EDGEWEIGHT_INFINITY && shortestPathLength <= maximumDistance) {
+                finished = true;
+            }
         }
         PQForward.clear();
         PQBackward.clear();
