@@ -31,6 +31,10 @@ public:
     };
 
     EDGEWEIGHT_T getDistance(NODE_T s, NODE_T t) {
+        return getDistance(s, t, EDGEWEIGHT_INFINITY);
+    }
+
+    EDGEWEIGHT_T getDistance(NODE_T s, NODE_T t, EDGEWEIGHT_T maximumDistance) {
         wasPushedForward.reset_all();
         wasPushedBackward.reset_all();
 
@@ -54,7 +58,7 @@ public:
             if(PQForward.empty()) {
                 forwardFinished = true;
             }
-            else if(PQForward.peek().key >= shortestPathLength) {
+            else if(PQForward.peek().key >= shortestPathLength || PQForward.peek().key >= maximumDistance) {
                 forwardFinished = true;
             }
 
@@ -62,7 +66,7 @@ public:
             if(PQBackward.empty()) {
                 backwardFinished = true;
             }
-            else if(PQBackward.peek().key >= shortestPathLength) {
+            else if(PQBackward.peek().key >= shortestPathLength || PQBackward.peek().key >= maximumDistance) {
                 backwardFinished = true;
             }
 

@@ -176,3 +176,11 @@ TEST(EdgeHierarchyGraphTest, LongBidirectedPath) {
         }
     }
 }
+
+TEST(EdgeHierarchyQueryTests, MaximumDistanceExact) {
+    EdgeHierarchyGraph g(2);
+    g.addEdge(0, 1, 1);
+    EdgeHierarchyQuery query(g);
+
+    EXPECT_EQ(query.getDistance(0, 1, 1), 1);
+}

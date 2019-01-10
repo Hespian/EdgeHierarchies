@@ -25,7 +25,7 @@ pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> 
                                                                            [&] (NODE_T vPrime, EDGELEVEL_T vPrimeLevel, EDGEWEIGHT_T vPrimeWeight) {
                                                                                assert(vPrimeLevel == EDGELEVEL_INFINIY);
                                                                                EDGEWEIGHT_T uPrimeVPrimeWeight = uPrimeVWeight + vPrimeWeight;
-                                                                               EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(uPrime, vPrime);
+                                                                               EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(uPrime, vPrime, uPrimeVPrimeWeight);
 
                                                                                if(distanceInQueryGraph > uPrimeVPrimeWeight) {
                                                                                    if(g.hasEdge(uPrime, v)) {
