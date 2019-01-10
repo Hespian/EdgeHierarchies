@@ -1,7 +1,7 @@
 ################################################################################
 # CMakeLists.txt
 #
-# Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
+# Copyright (C) 2018-2019 Demian Hespe <hespe@kit.edu>
 #
 # All rights reserved.
 ################################################################################
@@ -28,10 +28,14 @@ add_subdirectory(googletest/googletest)
 include_directories(
   ${PROJECT_SOURCE_DIR}/lib
   ${PROJECT_SOURCE_DIR}/extern/RoutingKit/include
+  ${PROJECT_SOURCE_DIR}/extern/tlx
   )
 
+#descend into tlx
+add_subdirectory(extern/tlx)
+
 # descend into apps
-# add_subdirectory(app)
+add_subdirectory(app)
 
 #descend into tests
 enable_testing()
