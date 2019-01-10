@@ -1,7 +1,7 @@
 ################################################################################
 # tests/CMakeLists.txt
 #
-# Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
+# Copyright (C) 2018-2019 Demian Hespe <hespe@kit.edu>
 #
 # All rights reserved.
 ################################################################################
@@ -24,4 +24,5 @@ buildAndAddTest("bipartiteMinimumVertexCoverTests.cpp")
 buildAndAddTest("arraySetTests.cpp")
 buildAndAddTest("shortcutHelperTests.cpp")
 buildAndAddTest("shortcutCountingRoundsEdgeRankerTests.cpp")
-
+buildAndAddTest("dimacsGraphReaderTests.cpp")
+configure_file(exampleGraph.dimacs exampleGraph.dimacs COPYONLY)

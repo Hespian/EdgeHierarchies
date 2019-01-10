@@ -1,0 +1,12 @@
+c This is a comment
+c This is another comment
+c The next line is an empty comment
+c 
+p sp 6 5
+c graph contains 6 nodes and 5 arcs
+c
+a 1 2 3
+a 2 1 3
+a 2 3 2
+a 3 2 1
+a 3 4 4
