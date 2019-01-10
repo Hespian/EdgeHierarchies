@@ -52,7 +52,7 @@ public:
         }
         for(NODE_T v = 0; v < nRhs; ++v) {
             if(markedRhs[v]) {
-                result.first.push_back(nodesInverseRhs[v]);
+                result.second.push_back(nodesInverseRhs[v]);
             }
         }
 

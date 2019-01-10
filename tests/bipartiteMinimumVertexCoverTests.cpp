@@ -41,6 +41,8 @@ TEST(bipartiteMinimumVertexCoverTest, SimpleTest) {
 
     EXPECT_EQ(mvcTotal[1], 5);
 
+    EXPECT_EQ(mvc.second[0], 5);
+
 
     edges.clear();
     edges.push_back(make_pair(3u, 7u));
