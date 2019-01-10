@@ -11,6 +11,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include "assert.h"
 
 #include "routingkit/timestamp_flag.h"
 

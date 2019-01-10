@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
+#include "assert.h"
 
 #include <sparsehash/sparse_hash_map>
 

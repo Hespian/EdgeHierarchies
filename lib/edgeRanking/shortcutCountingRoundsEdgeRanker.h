@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <utility>
+#include "assert.h"
 
 #include "definitions.h"
 #include "edgeIdCreator.h"

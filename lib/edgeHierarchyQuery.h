@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "assert.h"
+
 #include "routingkit/id_queue.h"
 #include "routingkit/timestamp_flag.h"
 

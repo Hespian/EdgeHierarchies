@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <limits>
+#include "assert.h"
 
 using namespace std;
 
