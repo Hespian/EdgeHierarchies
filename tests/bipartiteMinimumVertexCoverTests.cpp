@@ -60,3 +60,24 @@ TEST(bipartiteMinimumVertexCoverTest, SimpleTest) {
     mvc = bipartiteMVC.getMinimumVertexCover(edges);
     EXPECT_EQ(bipartiteMVC.getMinimumVertexCoverSize(edges), mvc.first.size() + mvc.second.size());
 }
+
+
+TEST(bipartiteMinimumVertexCoverTest, ElementOnBothSides) {
+    BipartiteMinimumVertexCover bipartiteMVC(10);
+    vector<pair<NODE_T, NODE_T>> edges;
+    edges.push_back(make_pair(1u, 5u));
+    edges.push_back(make_pair(2u, 5u));
+    edges.push_back(make_pair(3u, 4u));
+    edges.push_back(make_pair(3u, 8u));
+    edges.push_back(make_pair(3u, 5u));
+    edges.push_back(make_pair(4u, 6u));
+    edges.push_back(make_pair(4u, 7u));
+
+    EXPECT_EQ(bipartiteMVC.getMinimumVertexCoverSize(edges), 3);
+
+    auto mvc = bipartiteMVC.getMinimumVertexCover(edges);
+    EXPECT_EQ(bipartiteMVC.getMinimumVertexCoverSize(edges), mvc.first.size() + mvc.second.size());
+
+    EXPECT_TRUE(find(mvc.first.begin(), mvc.first.end(), 4) != mvc.first.end());
+    EXPECT_TRUE(find(mvc.second.begin(), mvc.second.end(), 4) == mvc.second.end());
+}
