@@ -178,11 +178,9 @@ protected:
     NODE_T getLocalNodeId(NODE_T globalNodeId) {
         NODE_T &n = lhs ? nLhs : nRhs;
         vector<NODE_T> &nodes = lhs ? nodesLhs : nodesRhs;
-        vector<NODE_T> &nodesOther = lhs ? nodesRhs : nodesLhs;
         vector<NODE_T> &nodesInverse = lhs ? nodesInverseLhs : nodesInverseRhs;
 
         if(nodes[globalNodeId] == NODE_INVALID) {
-            assert(nodesOther[globalNodeId] == NODE_INVALID);
             nodes[globalNodeId] = n;
             nodesInverse[n] = globalNodeId;
             ++n;
@@ -200,7 +198,6 @@ protected:
     vector<NODE_T> nodesInverseRhs;
     vector<NODE_T> matchingPartnerLhs;
     vector<NODE_T> matchingPartnerRhs;
-    vector<NODE_T> augmentingPath;
     RoutingKit::TimestampFlags visited;
     vector<NODE_T> markedLhs;
     vector<NODE_T> markedRhs;
