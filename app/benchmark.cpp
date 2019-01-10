@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
 	end = chrono::steady_clock::now();
 
 	cout << "Average query time : "
-         << chrono::duration_cast<chrono::microseconds>(end - start).count()
+         << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
          << " us" << endl;
 
     return numMistakes;
