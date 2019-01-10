@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 
         EDGEWEIGHT_T distance = query.getDistance(u, v);
 
-        EDGEWEIGHT_T originalGraphDistance = originalGraphQuery.getDistance(u,v);
+        EDGEWEIGHT_T originalGraphDistance = originalGraphQuery.getDistance(u, v);
 
         if(distance != originalGraphDistance) {
             cout << "Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << originalGraphDistance << ")" << endl;
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    cout << "All correct. Measuring time..." << endl;
+    cout << "Done checking. Measuring time..." << endl;
 
 
     srand (seed);
