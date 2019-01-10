@@ -50,7 +50,7 @@ public:
 
     void decreaseEdgeWeight(NODE_T u, NODE_T v, EDGEWEIGHT_T weight) {
         assert(hasEdge(u, v));
-        assert(getEdgeWeight(u, v) > weight);
+        assert(getEdgeWeight(u, v) >= weight);
         for(size_t i = 0; i < neighborsOut[u].size(); ++i) {
             if(neighborsOut[u][i] == v) {
                 edgeWeightsOut[u][i] = weight;
