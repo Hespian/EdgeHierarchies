@@ -1,7 +1,7 @@
 /*******************************************************************************
  * tests/edgeIdCreatorTests.cpp
  *
- * Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
+ * Copyright (C) 2018-2019 Demian Hespe <hespe@kit.edu>
  *
  * All rights reserved.
  ******************************************************************************/
