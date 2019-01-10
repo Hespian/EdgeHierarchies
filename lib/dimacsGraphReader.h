@@ -46,7 +46,9 @@ EdgeHierarchyGraph readGraphDimacs(string fileName) {
             NODE_T u, v;
             EDGEWEIGHT_T weight;
             iss >> u >> v >> weight;
-            g.addEdge(u - 1, v - 1, weight);
+            if(!g.hasEdge(u - 1, v - 1)) {
+                g.addEdge(u - 1, v - 1, weight);
+            }
         }
     }
 
