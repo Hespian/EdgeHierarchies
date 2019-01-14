@@ -29,12 +29,14 @@ pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> 
 
                                                                                if(distanceInQueryGraph > uPrimeVPrimeWeight) {
                                                                                    if(g.hasEdge(uPrime, v)) {
+                                                                                       // TODO Is this true?
                                                                                        assert(g.getEdgeWeight(uPrime, v) > uPrimeVWeight);
                                                                                        if(returnEdgesToDecrease) {
                                                                                            result.second.push_back(make_tuple(uPrime, v, uPrimeVWeight));
                                                                                        }
                                                                                    }
                                                                                    else if (g.hasEdge(u, vPrime)) {
+                                                                                       // TODO Is this true?
                                                                                        assert(g.getEdgeWeight(u, vPrime) > uVWeight + vPrimeWeight);
                                                                                        if(returnEdgesToDecrease) {
                                                                                            EDGEWEIGHT_T uVPrimeWeight = uVWeight + vPrimeWeight;

@@ -217,3 +217,47 @@ TEST(EdgeHierarchyConstructionTest, NoDuplicateEdge) {
         construction.run();
     }
 }
+
+class Return13then23EdgeRanker {
+public:
+    Return13then23EdgeRanker(EdgeHierarchyGraph &g) : count(0) {
+    }
+
+    void addEdge(NODE_T u, NODE_T v) {
+    }
+
+    void updateEdge(NODE_T u, NODE_T v) {
+    }
+
+    pair<NODE_T, NODE_T> getNextEdge() {
+        count++;
+        if(count == 1)
+            return make_pair(1u, 3u);
+        else if(count == 2)
+            return make_pair(2u, 3u);
+        assert(false);
+    }
+
+    bool hasNextEdge() {
+        return count <= 1;
+    }
+private:
+    int count;
+};
+
+TEST(EdgeHierarchyConstructionTest, EdgeDecreaseWithLevel) {
+    EdgeHierarchyGraph g(5);
+    g.addEdge(0, 1, 1);
+    g.addEdge(1, 2, 1);
+    g.addEdge(2, 3, 1);
+    g.addEdge(3, 4, 1);
+    g.addEdge(1, 3, 3);
+
+    EdgeHierarchyQuery query(g);
+
+    EdgeHierarchyConstruction<Return13then23EdgeRanker> construction(g, query);
+
+    construction.run();
+
+    EXPECT_EQ(query.getDistance(0, 4), 4);
+}
