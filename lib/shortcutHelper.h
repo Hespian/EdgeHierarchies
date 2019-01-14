@@ -32,7 +32,7 @@ pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> 
                                                                                        // TODO Is this true?
                                                                                        assert(g.getEdgeWeight(uPrime, v) > uPrimeVWeight);
                                                                                        if(returnEdgesToDecrease) {
-                                                                                           result.second.push_back(make_tuple(uPrime, v, uPrimeVWeight));
+                                                                                           result.second.emplace_back(uPrime, v, uPrimeVWeight);
                                                                                        }
                                                                                    }
                                                                                    else if (g.hasEdge(u, vPrime)) {
@@ -40,11 +40,11 @@ pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> 
                                                                                        assert(g.getEdgeWeight(u, vPrime) > uVWeight + vPrimeWeight);
                                                                                        if(returnEdgesToDecrease) {
                                                                                            EDGEWEIGHT_T uVPrimeWeight = uVWeight + vPrimeWeight;
-                                                                                           result.second.push_back(make_tuple(u, vPrime, uVPrimeWeight));
+                                                                                           result.second.emplace_back(u, vPrime, uVPrimeWeight);
                                                                                        }
                                                                                    }
                                                                                    else {
-                                                                                       result.first.push_back(make_pair(uPrime, vPrime));
+                                                                                       result.first.emplace_back(uPrime, vPrime);
                                                                                    }
                                                                                }
                                                                            });
