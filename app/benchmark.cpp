@@ -53,6 +53,8 @@ int main(int argc, char* argv[]) {
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << " ms" << endl;
 
+    cout << "Input graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+
     EdgeHierarchyQuery query(g);
 
     EdgeHierarchyGraph originalGraph(g);
@@ -68,8 +70,9 @@ int main(int argc, char* argv[]) {
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << " ms" << endl;
 
-    srand (seed);
+    cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
+    srand (seed);
     int numMistakes = 0;
     for(unsigned i = 0; i < numQueries; ++i) {
         NODE_T u = rand() % g.getNumberOfNodes();
