@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <utility>
-#include "assert.h"
+#include <cassert>
 
 #include "definitions.h"
 #include "edgeHierarchyGraph.h"

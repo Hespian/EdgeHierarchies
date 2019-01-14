@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <utility>
-#include "assert.h"
+#include <cassert>
 #include <tuple>
 
 // first: shortest paths lost; second: edges to decrease

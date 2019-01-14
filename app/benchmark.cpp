@@ -10,7 +10,7 @@
 #include <iostream>
 #include <chrono>
 #include <unistd.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <tlx/cmdline_parser.hpp>
 
@@ -99,6 +99,7 @@ int main(int argc, char* argv[]) {
         NODE_T v = rand() % g.getNumberOfNodes();
 
         EDGEWEIGHT_T distance = query.getDistance(u, v);
+        (void) distance;
     }
 	end = chrono::steady_clock::now();
 
