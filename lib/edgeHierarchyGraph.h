@@ -9,7 +9,9 @@
 #pragma once
 
 #include <vector>
-#include "cassert"
+#include <cassert>
+#include <numeric>
+
 
 #include "definitions.h"
 
@@ -17,7 +19,7 @@ using namespace std;
 
 class EdgeHierarchyGraph {
 public:
-    EdgeHierarchyGraph(NODE_T n) : n(n), m(0), neighborsOut(n), edgeWeightsOut(n), edgeLevelsOut(n), neighborsIn(n), edgeWeightsIn(n), edgeLevelsIn(n) {
+    EdgeHierarchyGraph(NODE_T n) : n(n), m(0), neighborsOut(n), edgeWeightsOut(n), edgeLevelsOut(n), neighborsIn(n), edgeWeightsIn(n), edgeLevelsIn(n), edgesSorted(false) {
 
     }
 
@@ -132,6 +134,8 @@ public:
         for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
             if(edgeLevelsIn[v][i] >= levelThreshold) {
                 callback(neighborsIn[v][i], edgeLevelsIn[v][i], edgeWeightsIn[v][i]);
+            } else if(edgesSorted) {
+                break;
             }
         }
     }
@@ -141,6 +145,8 @@ public:
         for(size_t i = 0; i < neighborsOut[v].size(); ++i) {
             if(edgeLevelsOut[v][i] >= levelThreshold) {
                 callback(neighborsOut[v][i], edgeLevelsOut[v][i], edgeWeightsOut[v][i]);
+            } else if(edgesSorted) {
+                break;
             }
         }
     }
@@ -150,6 +156,36 @@ public:
         for(NODE_T v = 0; v < n; ++v) {
             callback(v);
         }
+    }
+
+    void sortEdges() {
+        for(NODE_T v = 0; v < n; ++v) {
+            vector<NODE_T> order(edgeLevelsOut[v].size());
+            iota(begin(order), end(order), 0);
+
+            sort(order.begin(), order.end(), [&] (NODE_T i, NODE_T j) {
+                return edgeLevelsOut[v][i] > edgeLevelsOut[v][j];
+            });
+
+            applyPermutation(neighborsOut[v], order);
+            applyPermutation(edgeWeightsOut[v], order);
+            applyPermutation(edgeLevelsOut[v], order);
+        }
+
+        for(NODE_T v = 0; v < n; ++v) {
+            vector<NODE_T> order(edgeLevelsIn[v].size());
+            iota(begin(order), end(order), 0);
+
+            sort(order.begin(), order.end(), [&] (NODE_T i, NODE_T j) {
+                return edgeLevelsIn[v][i] > edgeLevelsIn[v][j];
+            });
+
+            applyPermutation(neighborsIn[v], order);
+            applyPermutation(edgeWeightsIn[v], order);
+            applyPermutation(edgeLevelsIn[v], order);
+        }
+
+        edgesSorted = true;
     }
 
 /******************************************************************************/
@@ -163,4 +199,17 @@ protected:
     vector<vector<NODE_T>> neighborsIn;
     vector<vector<EDGEWEIGHT_T>> edgeWeightsIn;
     vector<vector<EDGELEVEL_T>> edgeLevelsIn;
+    bool edgesSorted;
+
+    template<typename T>
+    void applyPermutation(
+            vector<T> &vec,
+            vector<NODE_T> &perm)
+    {
+        vector<T> vecTemp(vec.size());
+        for (size_t i = 0; i < vec.size(); i++) {
+            vecTemp[i] = vec[perm[i]];
+        }
+        vec.swap(vecTemp);
+    }
 };

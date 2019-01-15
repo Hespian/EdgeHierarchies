@@ -98,6 +98,7 @@ int main(int argc, char* argv[]) {
 
     start = chrono::steady_clock::now();
     construction.run();
+    g.sortEdges();
 	end = chrono::steady_clock::now();
 
 	cout << "EH Construction took "
