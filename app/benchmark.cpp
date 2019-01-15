@@ -14,12 +14,33 @@
 
 #include <tlx/cmdline_parser.hpp>
 
+#include <routingkit/contraction_hierarchy.h>
+
 #include "definitions.h"
 #include "edgeHierarchyGraph.h"
 #include "edgeHierarchyQuery.h"
 #include "edgeHierarchyConstruction.h"
 #include "dimacsGraphReader.h"
 #include "edgeRanking/shortcutCountingRoundsEdgeRanker.h"
+
+
+RoutingKit::ContractionHierarchy getCHFromGraph(EdgeHierarchyGraph &g) {
+    std::vector<unsigned> tails, heads, weights;
+
+    g.forAllNodes([&] (NODE_T tail) {
+       g.forAllNeighborsOut(tail, [&] (NODE_T head, EDGEWEIGHT_T weight) {
+           tails.push_back(tail);
+           heads.push_back(head);
+           weights.push_back(weight);
+       });
+    });
+
+    return RoutingKit::ContractionHierarchy::build(
+            g.getNumberOfNodes(),
+            tails, heads,
+            weights
+    );
+}
 
 int main(int argc, char* argv[]) {
     tlx::CmdlineParser cp;
@@ -55,6 +76,19 @@ int main(int argc, char* argv[]) {
 
     cout << "Input graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
+    start = chrono::steady_clock::now();
+    auto ch = getCHFromGraph(g);
+    RoutingKit::ContractionHierarchyQuery chQuery(ch);
+    end = chrono::steady_clock::now();
+
+    cout << "CH Construction took "
+         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+         << " ms" << endl;
+
+
+
+
+
     EdgeHierarchyQuery query(g);
 
     EdgeHierarchyGraph originalGraph(g);
@@ -66,7 +100,7 @@ int main(int argc, char* argv[]) {
     construction.run();
 	end = chrono::steady_clock::now();
 
-	cout << "Construction took "
+	cout << "EH Construction took "
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << " ms" << endl;
 
@@ -81,11 +115,21 @@ int main(int argc, char* argv[]) {
 
         EDGEWEIGHT_T distance = query.getDistance(u, v);
 
-        EDGEWEIGHT_T originalGraphDistance = originalGraphQuery.getDistance(u, v);
+//        EDGEWEIGHT_T originalGraphDistance = originalGraphQuery.getDistance(u, v);
 
-        if(distance != originalGraphDistance) {
+        chQuery.reset().add_source(u).add_target(v).run();
+        auto chDistance = chQuery.get_distance();
 
-            cout << "Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << originalGraphDistance << ")" << endl;
+//        if(distance != originalGraphDistance) {
+//
+//            cout << "Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << originalGraphDistance << ")" << endl;
+//            numMistakes++;
+//        } else {
+//            numCorrect++;
+//        }
+
+        if(chDistance != distance) {
+            cout << "Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << chDistance << ")" << endl;
             numMistakes++;
         } else {
             numCorrect++;
@@ -111,7 +155,28 @@ int main(int argc, char* argv[]) {
     }
 	end = chrono::steady_clock::now();
 
-	cout << "Average query time : "
+	cout << "Average query time (EH): "
+         << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
+         << " us" << endl;
+
+
+
+
+
+    srand (seed);
+
+    start = chrono::steady_clock::now();
+    for(unsigned i = 0; i < numQueries; ++i) {
+        NODE_T u = rand() % g.getNumberOfNodes();
+        NODE_T v = rand() % g.getNumberOfNodes();
+
+        chQuery.reset().add_source(u).add_target(v).run();
+        auto chDistance = chQuery.get_distance();
+        (void) chDistance;
+    }
+    end = chrono::steady_clock::now();
+
+    cout << "Average query time (CH): "
          << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
          << " us" << endl;
 
