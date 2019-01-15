@@ -24,7 +24,7 @@
 int main(int argc, char* argv[]) {
     tlx::CmdlineParser cp;
 
-    cp.set_description("Benchmark programm for EdgeHierarchies");
+    cp.set_description("Benchmark program for EdgeHierarchies");
     cp.set_author("Demian Hespe <hespe@kit.edu>");
 
     unsigned numQueries = 1000;
@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
 
     srand (seed);
     int numMistakes = 0;
+    int numCorrect = 0;
     for(unsigned i = 0; i < numQueries; ++i) {
         NODE_T u = rand() % g.getNumberOfNodes();
         NODE_T v = rand() % g.getNumberOfNodes();
@@ -83,10 +84,17 @@ int main(int argc, char* argv[]) {
         EDGEWEIGHT_T originalGraphDistance = originalGraphQuery.getDistance(u, v);
 
         if(distance != originalGraphDistance) {
+
             cout << "Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << originalGraphDistance << ")" << endl;
             numMistakes++;
+        } else {
+            numCorrect++;
         }
     }
+
+    cout << numMistakes << " out of " << numQueries << " WRONG!!!" << endl;
+
+    cout << numCorrect << " out of " << numQueries << " CORRECT!" << endl;
 
     cout << "Done checking. Measuring time..." << endl;
 

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * lib/edgeHierarchyGraph.h
  *
- * Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
+ * Copyright (C) 2018-2019 Demian Hespe <hespe@kit.edu>
  *
  * All rights reserved.
  ******************************************************************************/
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <vector>
-#include "assert.h"
+#include "cassert"
 
 #include "definitions.h"
 
@@ -50,6 +50,9 @@ public:
 
     void decreaseEdgeWeight(NODE_T u, NODE_T v, EDGEWEIGHT_T weight) {
         assert(hasEdge(u, v));
+        if(getEdgeWeight(u,v) < weight){
+            return;
+        }
         assert(getEdgeWeight(u, v) >= weight);
         for(size_t i = 0; i < neighborsOut[u].size(); ++i) {
             if(neighborsOut[u][i] == v) {

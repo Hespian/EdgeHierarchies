@@ -184,3 +184,23 @@ TEST(EdgeHierarchyQueryTests, MaximumDistanceExact) {
 
     EXPECT_EQ(query.getDistance(0, 1, 1), 1);
 }
+
+//TEST(EdgeHierarchyQueryTests, DirectPathNotShortestPath) {
+//    EdgeHierarchyGraph g(5);
+//    g.addEdge(0, 4, 1);
+//    g.addEdge(4, 1, 2824);
+//    g.addEdge(0, 1, 2826);
+//    g.addEdge(1, 2, 583);
+//    g.addEdge(2, 3, 3209);
+//    g.addEdge(0, 3, 8281);
+//    EdgeHierarchyQuery query(g);
+//
+//    g.setEdgeLevel(0, 1, 406939);
+//    g.setEdgeLevel(1, 2, EDGELEVEL_INFINIY - 1);
+//    g.setEdgeLevel(0, 4, EDGELEVEL_INFINIY);
+//    g.setEdgeLevel(4, 1, EDGELEVEL_INFINIY);
+//    g.setEdgeLevel(2, 3, EDGELEVEL_INFINIY);
+//    g.setEdgeLevel(0, 3, EDGELEVEL_INFINIY);
+//
+//    EXPECT_EQ(query.getDistance(0, 3, 6618), 6618);
+//}

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * lib/shortcutHelper.h
  *
- * Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
+ * Copyright (C) 2018-2019 Demian Hespe <hespe@kit.edu>
  *
  * All rights reserved.
  ******************************************************************************/
@@ -27,17 +27,17 @@ pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> 
                                                                                EDGEWEIGHT_T uPrimeVPrimeWeight = uPrimeVWeight + vPrimeWeight;
                                                                                EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(uPrime, vPrime, uPrimeVPrimeWeight);
 
-                                                                               if(distanceInQueryGraph > uPrimeVPrimeWeight) {
+                                                                               if(distanceInQueryGraph >= uPrimeVPrimeWeight) {
                                                                                    if(g.hasEdge(uPrime, v)) {
                                                                                        // TODO Is this true?
-                                                                                       assert(g.getEdgeWeight(uPrime, v) > uPrimeVWeight);
+//                                                                                       assert(g.getEdgeWeight(uPrime, v) >= uPrimeVWeight);
                                                                                        if(returnEdgesToDecrease) {
                                                                                            result.second.emplace_back(uPrime, v, uPrimeVWeight);
                                                                                        }
                                                                                    }
                                                                                    else if (g.hasEdge(u, vPrime)) {
                                                                                        // TODO Is this true?
-                                                                                       assert(g.getEdgeWeight(u, vPrime) > uVWeight + vPrimeWeight);
+//                                                                                       assert(g.getEdgeWeight(u, vPrime) >= uVWeight + vPrimeWeight);
                                                                                        if(returnEdgesToDecrease) {
                                                                                            EDGEWEIGHT_T uVPrimeWeight = uVWeight + vPrimeWeight;
                                                                                            result.second.emplace_back(u, vPrime, uVPrimeWeight);
