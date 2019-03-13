@@ -27,7 +27,7 @@ public:
 
     void setEdgeLevel(NODE_T u, NODE_T v, EDGELEVEL_T level) {
         assert(g.getEdgeLevel(u,v) == EDGELEVEL_INFINIY);
-        g.decreaseEdgeWeight(u, v, query.getDistance(u, v));
+        // g.decreaseEdgeWeight(u, v, query.getDistance(u, v));
         g.setEdgeLevel(u, v, level);
         EDGEWEIGHT_T uVWeight = g.getEdgeWeight(u, v);
         pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> shortestPathsLost = getShortestPathsLost<true>(u, v, uVWeight, g, query);
