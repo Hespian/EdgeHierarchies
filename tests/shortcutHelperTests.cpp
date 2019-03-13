@@ -28,7 +28,7 @@ TEST(ShortcutHelperTest, SimpleTest) {
 
     EdgeHierarchyQuery query(g);
 
-    g.setEdgeLevel(1, 2, 1);
+    g.setEdgeRank(1, 2, 1);
 
     pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> shortestPathsLost = getShortestPathsLost<true>(1, 2, 1, g, query);
 

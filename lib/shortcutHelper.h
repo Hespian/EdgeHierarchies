@@ -17,37 +17,47 @@
 template<bool returnEdgesToDecrease>
 pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> getShortestPathsLost(NODE_T u, NODE_T v, EDGEWEIGHT_T uVWeight, EdgeHierarchyGraph &g, EdgeHierarchyQuery &query) {
     pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> result;
-    g.forAllNeighborsInWithHighLevel(u, EDGELEVEL_INFINIY,
-                                     [&] (NODE_T uPrime, EDGELEVEL_T uPrimeLevel, EDGEWEIGHT_T uPrimeWeight) {
-                                         assert(uPrimeLevel == EDGELEVEL_INFINIY);
-                                         EDGEWEIGHT_T uPrimeVWeight = uVWeight + uPrimeWeight;
-                                         g.forAllNeighborsOutWithHighLevel(v, EDGELEVEL_INFINIY,
-                                                                           [&] (NODE_T vPrime, EDGELEVEL_T vPrimeLevel, EDGEWEIGHT_T vPrimeWeight) {
-                                                                               assert(vPrimeLevel == EDGELEVEL_INFINIY);
-                                                                               EDGEWEIGHT_T uPrimeVPrimeWeight = uPrimeVWeight + vPrimeWeight;
-                                                                               EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(uPrime, vPrime, uPrimeVPrimeWeight);
+    g.forAllNeighborsInWithHighRank(u, EDGERANK_INFINIY,
+                                    [&](NODE_T uPrime, EDGERANK_T uPrimeLevel, EDGEWEIGHT_T uPrimeWeight) {
+                                        assert(uPrimeLevel == EDGERANK_INFINIY);
+                                        EDGEWEIGHT_T uPrimeVWeight = uVWeight + uPrimeWeight;
+                                        g.forAllNeighborsOutWithHighRank(v, EDGERANK_INFINIY,
+                                                                         [&](NODE_T vPrime, EDGERANK_T vPrimeLevel,
+                                                                             EDGEWEIGHT_T vPrimeWeight) {
+                                                                             assert(vPrimeLevel == EDGERANK_INFINIY);
+                                                                             EDGEWEIGHT_T uPrimeVPrimeWeight =
+                                                                                     uPrimeVWeight + vPrimeWeight;
+                                                                             EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(
+                                                                                     uPrime, vPrime,
+                                                                                     uPrimeVPrimeWeight);
 
-                                                                               if(distanceInQueryGraph >= uPrimeVPrimeWeight) {
-                                                                                   if(g.hasEdge(uPrime, v)) {
-                                                                                       // TODO Is this true?
+                                                                             if (distanceInQueryGraph >=
+                                                                                 uPrimeVPrimeWeight) {
+                                                                                 if (g.hasEdge(uPrime, v)) {
+                                                                                     // TODO Is this true?
 //                                                                                       assert(g.getEdgeWeight(uPrime, v) >= uPrimeVWeight);
-                                                                                       if(returnEdgesToDecrease) {
-                                                                                           result.second.emplace_back(uPrime, v, uPrimeVWeight);
-                                                                                       }
-                                                                                   }
-                                                                                   else if (g.hasEdge(u, vPrime)) {
-                                                                                       // TODO Is this true?
+                                                                                     if (returnEdgesToDecrease) {
+                                                                                         result.second.emplace_back(
+                                                                                                 uPrime, v,
+                                                                                                 uPrimeVWeight);
+                                                                                     }
+                                                                                 } else if (g.hasEdge(u, vPrime)) {
+                                                                                     // TODO Is this true?
 //                                                                                       assert(g.getEdgeWeight(u, vPrime) >= uVWeight + vPrimeWeight);
-                                                                                       if(returnEdgesToDecrease) {
-                                                                                           EDGEWEIGHT_T uVPrimeWeight = uVWeight + vPrimeWeight;
-                                                                                           result.second.emplace_back(u, vPrime, uVPrimeWeight);
-                                                                                       }
-                                                                                   }
-                                                                                   else {
-                                                                                       result.first.emplace_back(uPrime, vPrime);
-                                                                                   }
-                                                                               }
-                                                                           });
-                                     });
+                                                                                     if (returnEdgesToDecrease) {
+                                                                                         EDGEWEIGHT_T uVPrimeWeight =
+                                                                                                 uVWeight +
+                                                                                                 vPrimeWeight;
+                                                                                         result.second.emplace_back(u,
+                                                                                                                    vPrime,
+                                                                                                                    uVPrimeWeight);
+                                                                                     }
+                                                                                 } else {
+                                                                                     result.first.emplace_back(uPrime,
+                                                                                                               vPrime);
+                                                                                 }
+                                                                             }
+                                                                         });
+                                    });
     return result;
 }

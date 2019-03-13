@@ -61,16 +61,16 @@ TEST(EdgeHierarchyConstructionTest, SetEdgeLevelSimple) {
 
     construction.setEdgeLevel(1, 2, 1);
 
-    EXPECT_EQ(g.getEdgeLevel(1, 2), 1);
+    EXPECT_EQ(g.getEdgeRank(1, 2), 1);
 
     EXPECT_TRUE(g.hasEdge(0, 2) || g.hasEdge(1,3));
 
     if(g.hasEdge(0, 2)) {
-        EXPECT_EQ(g.getEdgeLevel(0, 2), EDGELEVEL_INFINIY);
+        EXPECT_EQ(g.getEdgeRank(0, 2), EDGERANK_INFINIY);
         EXPECT_EQ(g.getEdgeWeight(0, 2), 2);
     }
     else {
-        EXPECT_EQ(g.getEdgeLevel(1, 3), EDGELEVEL_INFINIY);
+        EXPECT_EQ(g.getEdgeRank(1, 3), EDGERANK_INFINIY);
         EXPECT_EQ(g.getEdgeWeight(1, 3), 2);
     }
 
@@ -90,7 +90,7 @@ TEST(EdgeHierarchyConstructionTest, SetEdgeLevelNoNewEdge) {
 
     construction.setEdgeLevel(1, 2, 1);
 
-    EXPECT_EQ(g.getEdgeLevel(1, 2), 1);
+    EXPECT_EQ(g.getEdgeRank(1, 2), 1);
 
     EXPECT_FALSE(g.hasEdge(0, 2) || g.hasEdge(1,3));
 
@@ -134,7 +134,7 @@ TEST(EdgeHierarchyConstructionTest, RunSimple) {
 
     g.forAllNodes( [&] (NODE_T u) {
             g.forAllNeighborsOut(u, [&] (NODE_T v, EDGEWEIGHT_T weight) {
-                    EXPECT_LT(g.getEdgeLevel(u, v), EDGEWEIGHT_INFINITY);
+                    EXPECT_LT(g.getEdgeRank(u, v), EDGEWEIGHT_INFINITY);
                 });
         });
 

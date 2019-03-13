@@ -14,8 +14,8 @@
 #define NODE_INVALID std::numeric_limits<NODE_T>::max()
 #define EDGEWEIGHT_T uint32_t
 #define EDGEWEIGHT_INFINITY numeric_limits<EDGEWEIGHT_T>::max()
-#define EDGELEVEL_T uint32_t
-#define EDGECOUNT_T EDGELEVEL_T
-#define EDGELEVEL_INFINIY std::numeric_limits<EDGELEVEL_T>::max()
+#define EDGERANK_T uint32_t
+#define EDGECOUNT_T EDGERANK_T
+#define EDGERANK_INFINIY std::numeric_limits<EDGERANK_T>::max()
 #define EDGEID_T uint64_t
 #define EDGEID_EMPTY_KEY std::numeric_limits<EDGEID_T>::max()

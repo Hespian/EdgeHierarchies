@@ -44,13 +44,13 @@ TEST(ShortcutCountingRoundsEdgeRankerTest, SimpleTest) {
     firstRoundEdges.insert(make_pair(6u, 3u));
     firstRoundEdges.insert(make_pair(4u, 5u));
 
-    EDGELEVEL_T edgeLevel = 0;
+    EDGERANK_T edgeLevel = 0;
     while(!firstRoundEdges.empty()) {
         ASSERT_TRUE(ranker.hasNextEdge());
         std::pair<NODE_T, NODE_T> nextEdge = ranker.getNextEdge();
         ASSERT_TRUE(firstRoundEdges.find(nextEdge) != firstRoundEdges.end());
         firstRoundEdges.erase(nextEdge);
-        g.setEdgeLevel(nextEdge.first, nextEdge.second, edgeLevel++);
+        g.setEdgeRank(nextEdge.first, nextEdge.second, edgeLevel++);
     }
 
     std::unordered_set<std::pair<NODE_T, NODE_T>, edgeHash> secondRoundEdges;
@@ -62,7 +62,7 @@ TEST(ShortcutCountingRoundsEdgeRankerTest, SimpleTest) {
         std::pair<NODE_T, NODE_T> nextEdge = ranker.getNextEdge();
         ASSERT_TRUE(secondRoundEdges.find(nextEdge) != secondRoundEdges.end());
         secondRoundEdges.erase(nextEdge);
-        g.setEdgeLevel(nextEdge.first, nextEdge.second, edgeLevel++);
+        g.setEdgeRank(nextEdge.first, nextEdge.second, edgeLevel++);
     }
 
     EXPECT_FALSE(ranker.hasNextEdge());

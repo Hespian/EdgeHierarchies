@@ -67,10 +67,10 @@ protected:
             pair<NODE_T, NODE_T> edge = edgeIdCreator.getEdgeFromId(edgeId);
             NODE_T u = edge.first;
             NODE_T v = edge.second;
-            assert(g.getEdgeLevel(u, v) == EDGELEVEL_INFINIY);
-            g.setEdgeLevel(u, v, EDGELEVEL_INFINIY - 1);
+            assert(g.getEdgeRank(u, v) == EDGERANK_INFINIY);
+            g.setEdgeRank(u, v, EDGERANK_INFINIY - 1);
             auto shortestPathsLost = getShortestPathsLost<false>(edge.first, edge.second, g.getEdgeWeight(u, v), g, query);
-            g.setEdgeLevel(u, v, EDGELEVEL_INFINIY);
+            g.setEdgeRank(u, v, EDGERANK_INFINIY);
             numShortcutEdges[edgeId] = mvc.getMinimumVertexCoverSize(shortestPathsLost.first);
         }
 
@@ -80,22 +80,25 @@ protected:
             NODE_T v = edge.second;
             EDGEID_T numShortcutEdgesCurrentEdge = numShortcutEdges[edgeId];
             bool isMinimum = true;
-            g.forAllNeighborsOutWithHighLevel(v, EDGELEVEL_INFINIY, [&] (NODE_T neighbor, EDGELEVEL_T level, EDGEWEIGHT_T weight) {
-                    EDGEID_T incidentEdgeId = edgeIdCreator.getEdgeId(v, neighbor);
-                    assert(edgesInGraph.contains(incidentEdgeId));
-                    if(numShortcutEdges[incidentEdgeId] < numShortcutEdgesCurrentEdge) {
-                        isMinimum = false;
-                    }
-                });
+            g.forAllNeighborsOutWithHighRank(v, EDGERANK_INFINIY,
+                                             [&](NODE_T neighbor, EDGERANK_T level, EDGEWEIGHT_T weight) {
+                                                 EDGEID_T incidentEdgeId = edgeIdCreator.getEdgeId(v, neighbor);
+                                                 assert(edgesInGraph.contains(incidentEdgeId));
+                                                 if (numShortcutEdges[incidentEdgeId] < numShortcutEdgesCurrentEdge) {
+                                                     isMinimum = false;
+                                                 }
+                                             });
 
             if(isMinimum) {
-                g.forAllNeighborsInWithHighLevel(u, EDGELEVEL_INFINIY, [&] (NODE_T neighbor, EDGELEVEL_T level, EDGEWEIGHT_T weight) {
-                        EDGEID_T incidentEdgeId = edgeIdCreator.getEdgeId(neighbor, u);
-                        assert(edgesInGraph.contains(incidentEdgeId));
-                        if(numShortcutEdges[incidentEdgeId] < numShortcutEdgesCurrentEdge) {
-                            isMinimum = false;
-                        }
-                    });
+                g.forAllNeighborsInWithHighRank(u, EDGERANK_INFINIY,
+                                                [&](NODE_T neighbor, EDGERANK_T level, EDGEWEIGHT_T weight) {
+                                                    EDGEID_T incidentEdgeId = edgeIdCreator.getEdgeId(neighbor, u);
+                                                    assert(edgesInGraph.contains(incidentEdgeId));
+                                                    if (numShortcutEdges[incidentEdgeId] <
+                                                        numShortcutEdgesCurrentEdge) {
+                                                        isMinimum = false;
+                                                    }
+                                                });
             }
 
             if(isMinimum) {

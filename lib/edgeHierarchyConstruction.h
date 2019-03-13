@@ -25,18 +25,18 @@ class EdgeHierarchyConstruction {
 public:
     EdgeHierarchyConstruction(EdgeHierarchyGraph &g, EdgeHierarchyQuery &query) : g(g), query(query), edgeRanker(g), bipartiteMVC(g.getNumberOfNodes()) {}
 
-    void setEdgeLevel(NODE_T u, NODE_T v, EDGELEVEL_T level) {
-        assert(g.getEdgeLevel(u,v) == EDGELEVEL_INFINIY);
+    void setEdgeLevel(NODE_T u, NODE_T v, EDGERANK_T level) {
+        assert(g.getEdgeRank(u, v) == EDGERANK_INFINIY);
         // g.decreaseEdgeWeight(u, v, query.getDistance(u, v));
-        g.setEdgeLevel(u, v, level);
+        g.setEdgeRank(u, v, level);
         EDGEWEIGHT_T uVWeight = g.getEdgeWeight(u, v);
         pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> shortestPathsLost = getShortestPathsLost<true>(u, v, uVWeight, g, query);
 
         for(auto edgeToDecrease : shortestPathsLost.second) {
             g.decreaseEdgeWeight(get<0>(edgeToDecrease), get<1>(edgeToDecrease), get<2>(edgeToDecrease));
             edgeRanker.updateEdge(get<0>(edgeToDecrease), get<1>(edgeToDecrease));
-            if(g.getEdgeLevel(get<0>(edgeToDecrease), get<1>(edgeToDecrease)) < EDGELEVEL_INFINIY) {
-                g.setEdgeLevel(get<0>(edgeToDecrease), get<1>(edgeToDecrease), EDGELEVEL_INFINIY);
+            if(g.getEdgeRank(get<0>(edgeToDecrease), get<1>(edgeToDecrease)) < EDGERANK_INFINIY) {
+                g.setEdgeRank(get<0>(edgeToDecrease), get<1>(edgeToDecrease), EDGERANK_INFINIY);
                 edgeRanker.addEdge(get<0>(edgeToDecrease), get<1>(edgeToDecrease));
             }
         }

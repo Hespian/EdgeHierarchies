@@ -25,8 +25,8 @@ public:
                                                 wasPushedBackward(g.getNumberOfNodes()),
                                                 tentativeDistanceForward(g.getNumberOfNodes()),
                                                 tentativeDistanceBackward(g.getNumberOfNodes()),
-                                                levelForward(g.getNumberOfNodes()),
-                                                levelBackward(g.getNumberOfNodes()) {
+                                                rankForward(g.getNumberOfNodes()),
+                                                rankBackward(g.getNumberOfNodes()) {
 
     };
 
@@ -44,8 +44,8 @@ public:
         wasPushedBackward.set(t);
         tentativeDistanceForward[s] = 0;
         tentativeDistanceBackward[t] = 0;
-        levelForward[s] = 0;
-        levelBackward[t] = 0;
+        rankForward[s] = 0;
+        rankBackward[t] = 0;
 
         bool forward = true;
         bool finished = false;
@@ -103,12 +103,12 @@ protected:
         RoutingKit::TimestampFlags &wasPushedOther = forward ? wasPushedBackward : wasPushedForward;
         vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
         vector<EDGEWEIGHT_T> &tentativeDistanceOther = forward ? tentativeDistanceBackward : tentativeDistanceForward;
-        vector<EDGELEVEL_T> &levelCurrent = forward ? levelForward : levelBackward;
+        vector<EDGERANK_T> &rankCurrent = forward ? rankForward : rankBackward;
 
         auto popped = PQCurrent.pop();
 
         NODE_T u = popped.id;
-        EDGELEVEL_T distanceU = popped.key;
+        EDGERANK_T distanceU = popped.key;
         assert(distanceU == tentativeDistanceCurrent[u]);
 
         if(wasPushedOther.is_set(u)){
@@ -118,31 +118,31 @@ protected:
 			}
 		}
 
-        auto relaxFunc = [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) {
+        auto relaxFunc = [&] (NODE_T v, EDGERANK_T rank, EDGEWEIGHT_T weight) {
             EDGEWEIGHT_T distanceV = distanceU + weight;
             if(wasPushedCurrent.is_set(v)) {
                 if(distanceV < tentativeDistanceCurrent[v]) {
                     PQCurrent.decrease_key({v, distanceV});
                     tentativeDistanceCurrent[v] = distanceV;
-                    levelCurrent[v] = level;
+                    rankCurrent[v] = rank;
                 }
-//                else if(distanceV == tentativeDistanceCurrent[v] && levelCurrent[v] > level) {
-//                    levelCurrent[v] = level;
+//                else if(distanceV == tentativeDistanceCurrent[v] && rankCurrent[v] > rank) {
+//                    rankCurrent[v] = rank;
 //                }
             }
             else {
                 PQCurrent.push({v, distanceV});
                 tentativeDistanceCurrent[v] = distanceV;
                 wasPushedCurrent.set(v);
-                levelCurrent[v] = level;
+                rankCurrent[v] = rank;
             }
         };
 
         if(forward) {
-            g.forAllNeighborsOutWithHighLevel(u, levelCurrent[u], relaxFunc);
+            g.forAllNeighborsOutWithHighRank(u, rankCurrent[u], relaxFunc);
         }
         else {
-            g.forAllNeighborsInWithHighLevel(u, levelCurrent[u], relaxFunc);
+            g.forAllNeighborsInWithHighRank(u, rankCurrent[u], relaxFunc);
         }
     }
 
@@ -153,6 +153,6 @@ protected:
     RoutingKit::TimestampFlags wasPushedBackward;
     vector<EDGEWEIGHT_T> tentativeDistanceForward;
     vector<EDGEWEIGHT_T> tentativeDistanceBackward;
-    vector<EDGELEVEL_T> levelForward;
-    vector<EDGELEVEL_T> levelBackward;
+    vector<EDGERANK_T> rankForward;
+    vector<EDGERANK_T> rankBackward;
 };

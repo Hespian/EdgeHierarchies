@@ -158,31 +158,31 @@ TEST(EdgeHierarchyGraphTest, EdgeLevels) {
     g.addEdge(1, 2, 3);
     g.addEdge(1, 0, 1);
 
-    g.setEdgeLevel(1, 2, 1);
-    g.setEdgeLevel(1, 0, 2);
+    g.setEdgeRank(1, 2, 1);
+    g.setEdgeRank(1, 0, 2);
 
-    EXPECT_EQ(g.getEdgeLevel(0, 1), EDGELEVEL_INFINIY);
-    EXPECT_EQ(g.getEdgeLevel(1, 2), 1);
-    EXPECT_EQ(g.getEdgeLevel(1, 0), 2);
+    EXPECT_EQ(g.getEdgeRank(0, 1), EDGERANK_INFINIY);
+    EXPECT_EQ(g.getEdgeRank(1, 2), 1);
+    EXPECT_EQ(g.getEdgeRank(1, 0), 2);
 
-    vector<tuple<NODE_T, EDGELEVEL_T, EDGEWEIGHT_T>> result;
-    auto logEdges = [&] (NODE_T v, EDGELEVEL_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); };
+    vector<tuple<NODE_T, EDGERANK_T, EDGEWEIGHT_T>> result;
+    auto logEdges = [&] (NODE_T v, EDGERANK_T level, EDGEWEIGHT_T weight) { result.push_back(make_tuple(v, level, weight)); };
 
     // Outgoing edges
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(0, 0, logEdges);
+    g.forAllNeighborsOutWithHighRank(0, 0, logEdges);
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], make_tuple(1u, EDGELEVEL_INFINIY, 4u));
+    EXPECT_EQ(result[0], make_tuple(1u, EDGERANK_INFINIY, 4u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(0, EDGELEVEL_INFINIY, logEdges);
+    g.forAllNeighborsOutWithHighRank(0, EDGERANK_INFINIY, logEdges);
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0], make_tuple(1u, EDGELEVEL_INFINIY, 4u));
+    EXPECT_EQ(result[0], make_tuple(1u, EDGERANK_INFINIY, 4u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 1, logEdges);
+    g.forAllNeighborsOutWithHighRank(1, 1, logEdges);
     ASSERT_GE(result.size(), 2);
     EXPECT_EQ(result.size(), 2);
     sort(result.begin(), result.end());
@@ -190,34 +190,34 @@ TEST(EdgeHierarchyGraphTest, EdgeLevels) {
     EXPECT_EQ(result[1], make_tuple(2u, 1u, 3u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 2, logEdges);
+    g.forAllNeighborsOutWithHighRank(1, 2, logEdges);
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], make_tuple(0u, 2u, 1u));
 
     result.clear();
-    g.forAllNeighborsOutWithHighLevel(1, 3, logEdges);
+    g.forAllNeighborsOutWithHighRank(1, 3, logEdges);
     EXPECT_EQ(result.size(), 0);
 
     // Incoming edges
     result.clear();
-    g.forAllNeighborsInWithHighLevel(0, 1, logEdges);
+    g.forAllNeighborsInWithHighRank(0, 1, logEdges);
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], make_tuple(1u, 2u, 1u));
 
     result.clear();
-    g.forAllNeighborsInWithHighLevel(0, 2, logEdges);
+    g.forAllNeighborsInWithHighRank(0, 2, logEdges);
     ASSERT_GE(result.size(), 1);
     EXPECT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], make_tuple(1u, 2u, 1u));
 
     result.clear();
-    g.forAllNeighborsInWithHighLevel(0, 3, logEdges);
+    g.forAllNeighborsInWithHighRank(0, 3, logEdges);
     EXPECT_EQ(result.size(), 0);
 
     result.clear();
-    g.forAllNeighborsInWithHighLevel(0, EDGELEVEL_INFINIY, logEdges);
+    g.forAllNeighborsInWithHighRank(0, EDGERANK_INFINIY, logEdges);
     EXPECT_EQ(result.size(), 0);
 }
 

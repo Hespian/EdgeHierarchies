@@ -19,7 +19,7 @@ using namespace std;
 
 class EdgeHierarchyGraph {
 public:
-    EdgeHierarchyGraph(NODE_T n) : n(n), m(0), neighborsOut(n), edgeWeightsOut(n), edgeLevelsOut(n), neighborsIn(n), edgeWeightsIn(n), edgeLevelsIn(n), edgesSorted(false) {
+    EdgeHierarchyGraph(NODE_T n) : n(n), m(0), neighborsOut(n), edgeWeightsOut(n), edgeRanksOut(n), neighborsIn(n), edgeWeightsIn(n), edgeRanksIn(n), edgesSorted(false) {
 
     }
 
@@ -44,10 +44,10 @@ public:
         ++m;
         neighborsOut[u].push_back(v);
         edgeWeightsOut[u].push_back(weight);
-        edgeLevelsOut[u].push_back(EDGELEVEL_INFINIY);
+        edgeRanksOut[u].push_back(EDGERANK_INFINIY);
         neighborsIn[v].push_back(u);
         edgeWeightsIn[v].push_back(weight);
-        edgeLevelsIn[v].push_back(EDGELEVEL_INFINIY);
+        edgeRanksIn[v].push_back(EDGERANK_INFINIY);
     }
 
     void decreaseEdgeWeight(NODE_T u, NODE_T v, EDGEWEIGHT_T weight) {
@@ -71,26 +71,26 @@ public:
         assert(false);
     }
 
-    void setEdgeLevel(NODE_T u, NODE_T v, EDGELEVEL_T level) {
+    void setEdgeRank(NODE_T u, NODE_T v, EDGERANK_T rank) {
         for(size_t i = 0; i < neighborsOut[u].size(); ++i) {
             if(neighborsOut[u][i] == v) {
-                edgeLevelsOut[u][i] = level;
+                edgeRanksOut[u][i] = rank;
                 break;
             }
         }
 
         for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
             if(neighborsIn[v][i] == u) {
-                edgeLevelsIn[v][i] = level;
+                edgeRanksIn[v][i] = rank;
                 break;
             }
         }
     }
 
-    EDGELEVEL_T getEdgeLevel(NODE_T u, NODE_T v) {
+    EDGERANK_T getEdgeRank(NODE_T u, NODE_T v) {
         for(size_t i = 0; i < neighborsOut[u].size(); ++i) {
             if(neighborsOut[u][i] == v) {
-                return edgeLevelsOut[u][i];
+                return edgeRanksOut[u][i];
             }
         }
         assert(false);
@@ -130,10 +130,10 @@ public:
 
 
     template<typename F>
-    void forAllNeighborsInWithHighLevel(NODE_T v, EDGELEVEL_T levelThreshold, F &&callback) {
+    void forAllNeighborsInWithHighRank(NODE_T v, EDGERANK_T rankThreshold, F &&callback) {
         for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
-            if(edgeLevelsIn[v][i] >= levelThreshold) {
-                callback(neighborsIn[v][i], edgeLevelsIn[v][i], edgeWeightsIn[v][i]);
+            if(edgeRanksIn[v][i] >= rankThreshold) {
+                callback(neighborsIn[v][i], edgeRanksIn[v][i], edgeWeightsIn[v][i]);
             } else if(edgesSorted) {
                 break;
             }
@@ -141,10 +141,10 @@ public:
     }
 
     template<typename F>
-    void forAllNeighborsOutWithHighLevel(NODE_T v, EDGELEVEL_T levelThreshold, F &&callback) {
+    void forAllNeighborsOutWithHighRank(NODE_T v, EDGERANK_T rankThreshold, F &&callback) {
         for(size_t i = 0; i < neighborsOut[v].size(); ++i) {
-            if(edgeLevelsOut[v][i] >= levelThreshold) {
-                callback(neighborsOut[v][i], edgeLevelsOut[v][i], edgeWeightsOut[v][i]);
+            if(edgeRanksOut[v][i] >= rankThreshold) {
+                callback(neighborsOut[v][i], edgeRanksOut[v][i], edgeWeightsOut[v][i]);
             } else if(edgesSorted) {
                 break;
             }
@@ -160,29 +160,29 @@ public:
 
     void sortEdges() {
         for(NODE_T v = 0; v < n; ++v) {
-            vector<NODE_T> order(edgeLevelsOut[v].size());
+            vector<NODE_T> order(edgeRanksOut[v].size());
             iota(begin(order), end(order), 0);
 
             sort(order.begin(), order.end(), [&] (NODE_T i, NODE_T j) {
-                return edgeLevelsOut[v][i] > edgeLevelsOut[v][j];
+                return edgeRanksOut[v][i] > edgeRanksOut[v][j];
             });
 
             applyPermutation(neighborsOut[v], order);
             applyPermutation(edgeWeightsOut[v], order);
-            applyPermutation(edgeLevelsOut[v], order);
+            applyPermutation(edgeRanksOut[v], order);
         }
 
         for(NODE_T v = 0; v < n; ++v) {
-            vector<NODE_T> order(edgeLevelsIn[v].size());
+            vector<NODE_T> order(edgeRanksIn[v].size());
             iota(begin(order), end(order), 0);
 
             sort(order.begin(), order.end(), [&] (NODE_T i, NODE_T j) {
-                return edgeLevelsIn[v][i] > edgeLevelsIn[v][j];
+                return edgeRanksIn[v][i] > edgeRanksIn[v][j];
             });
 
             applyPermutation(neighborsIn[v], order);
             applyPermutation(edgeWeightsIn[v], order);
-            applyPermutation(edgeLevelsIn[v], order);
+            applyPermutation(edgeRanksIn[v], order);
         }
 
         edgesSorted = true;
@@ -195,10 +195,10 @@ protected:
     EDGECOUNT_T m;
     vector<vector<NODE_T>> neighborsOut;
     vector<vector<EDGEWEIGHT_T>> edgeWeightsOut;
-    vector<vector<EDGELEVEL_T>> edgeLevelsOut;
+    vector<vector<EDGERANK_T>> edgeRanksOut;
     vector<vector<NODE_T>> neighborsIn;
     vector<vector<EDGEWEIGHT_T>> edgeWeightsIn;
-    vector<vector<EDGELEVEL_T>> edgeLevelsIn;
+    vector<vector<EDGERANK_T>> edgeRanksIn;
     bool edgesSorted;
 
     template<typename T>

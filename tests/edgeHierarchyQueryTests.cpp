@@ -53,10 +53,10 @@ TEST(EdgeHierarchyQueryTests, OnlyUpwards) {
     g.addEdge(1, 2, 1);
     g.addEdge(2, 3, 1);
     g.addEdge(3, 4, 1);
-    g.setEdgeLevel(0, 1, 1);
-    g.setEdgeLevel(1, 2, 2);
-    g.setEdgeLevel(2, 3, 3);
-    g.setEdgeLevel(3, 4, 4);
+    g.setEdgeRank(0, 1, 1);
+    g.setEdgeRank(1, 2, 2);
+    g.setEdgeRank(2, 3, 3);
+    g.setEdgeRank(3, 4, 4);
 
     EDGEWEIGHT_T distance = query.getDistance(0, 4);
     EXPECT_EQ(distance, 4);
@@ -69,10 +69,10 @@ TEST(EdgeHierarchyQueryTests, OnlyDownwards) {
     g.addEdge(1, 2, 1);
     g.addEdge(2, 3, 1);
     g.addEdge(3, 4, 1);
-    g.setEdgeLevel(0, 1, 4);
-    g.setEdgeLevel(1, 2, 3);
-    g.setEdgeLevel(2, 3, 2);
-    g.setEdgeLevel(3, 4, 1);
+    g.setEdgeRank(0, 1, 4);
+    g.setEdgeRank(1, 2, 3);
+    g.setEdgeRank(2, 3, 2);
+    g.setEdgeRank(3, 4, 1);
 
     EDGEWEIGHT_T distance = query.getDistance(0, 4);
     EXPECT_EQ(distance, 4);
@@ -85,10 +85,10 @@ TEST(EdgeHierarchyQueryTests, SimpleUpDown) {
     g.addEdge(1, 2, 1);
     g.addEdge(2, 3, 1);
     g.addEdge(3, 4, 1);
-    g.setEdgeLevel(0, 1, 0);
-    g.setEdgeLevel(1, 2, 2);
-    g.setEdgeLevel(2, 3, 3);
-    g.setEdgeLevel(3, 4, 1);
+    g.setEdgeRank(0, 1, 0);
+    g.setEdgeRank(1, 2, 2);
+    g.setEdgeRank(2, 3, 3);
+    g.setEdgeRank(3, 4, 1);
 
     EDGEWEIGHT_T distance = query.getDistance(0, 4);
     EXPECT_EQ(distance, 4);
@@ -101,13 +101,13 @@ TEST(EdgeHierarchyQueryTests, ImpossibleLevels) {
     g.addEdge(1, 2, 1);
     g.addEdge(2, 3, 1);
     g.addEdge(3, 4, 1);
-    g.setEdgeLevel(0, 1, 2);
-    g.setEdgeLevel(1, 2, 0);
-    g.setEdgeLevel(2, 3, 1);
-    g.setEdgeLevel(3, 4, 3);
+    g.setEdgeRank(0, 1, 2);
+    g.setEdgeRank(1, 2, 0);
+    g.setEdgeRank(2, 3, 1);
+    g.setEdgeRank(3, 4, 3);
 
     EDGEWEIGHT_T distance = query.getDistance(0, 4);
-    EXPECT_EQ(distance, EDGELEVEL_INFINIY);
+    EXPECT_EQ(distance, EDGERANK_INFINIY);
 }
 
 TEST(EdgeHierarchyQueryTests, PartialHierarchy) {
@@ -117,8 +117,8 @@ TEST(EdgeHierarchyQueryTests, PartialHierarchy) {
     g.addEdge(1, 2, 1);
     g.addEdge(2, 3, 1);
     g.addEdge(3, 4, 1);
-    g.setEdgeLevel(0, 1, 0);
-    g.setEdgeLevel(1, 2, 1);
+    g.setEdgeRank(0, 1, 0);
+    g.setEdgeRank(1, 2, 1);
 
     EDGEWEIGHT_T distance = query.getDistance(0, 4);
     EXPECT_EQ(distance, 4);
@@ -133,12 +133,12 @@ TEST(EdgeHierarchyQueryTests, OnePossibleOneImpossible) {
     g.addEdge(3, 4, 1);
     g.addEdge(0, 2, 3);
     g.addEdge(2, 4, 3);
-    g.setEdgeLevel(0, 1, 2);
-    g.setEdgeLevel(1, 2, 0);
-    g.setEdgeLevel(2, 3, 1);
-    g.setEdgeLevel(3, 4, 3);
-    g.setEdgeLevel(0, 2, 4);
-    g.setEdgeLevel(2, 4, 5);
+    g.setEdgeRank(0, 1, 2);
+    g.setEdgeRank(1, 2, 0);
+    g.setEdgeRank(2, 3, 1);
+    g.setEdgeRank(3, 4, 3);
+    g.setEdgeRank(0, 2, 4);
+    g.setEdgeRank(2, 4, 5);
 
     EDGEWEIGHT_T distance = query.getDistance(0, 4);
     EXPECT_EQ(distance, 6);
@@ -195,12 +195,12 @@ TEST(EdgeHierarchyQueryTests, MaximumDistanceExact) {
 //    g.addEdge(0, 3, 8281);
 //    EdgeHierarchyQuery query(g);
 //
-//    g.setEdgeLevel(0, 1, 406939);
-//    g.setEdgeLevel(1, 2, EDGELEVEL_INFINIY - 1);
-//    g.setEdgeLevel(0, 4, EDGELEVEL_INFINIY);
-//    g.setEdgeLevel(4, 1, EDGELEVEL_INFINIY);
-//    g.setEdgeLevel(2, 3, EDGELEVEL_INFINIY);
-//    g.setEdgeLevel(0, 3, EDGELEVEL_INFINIY);
+//    g.setEdgeRank(0, 1, 406939);
+//    g.setEdgeRank(1, 2, EDGERANK_INFINIY - 1);
+//    g.setEdgeRank(0, 4, EDGERANK_INFINIY);
+//    g.setEdgeRank(4, 1, EDGERANK_INFINIY);
+//    g.setEdgeRank(2, 3, EDGERANK_INFINIY);
+//    g.setEdgeRank(0, 3, EDGERANK_INFINIY);
 //
 //    EXPECT_EQ(query.getDistance(0, 3, 6618), 6618);
 //}
