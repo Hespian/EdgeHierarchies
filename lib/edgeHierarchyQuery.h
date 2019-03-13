@@ -1,7 +1,7 @@
 /*******************************************************************************
  * lib/edgeHierarchyQuery.h
  *
- * Copyright (C) 2018 Demian Hespe <hespe@kit.edu>
+ * Copyright (C) 2018-2019 Demian Hespe <hespe@kit.edu>
  *
  * All rights reserved.
  ******************************************************************************/
@@ -88,10 +88,6 @@ public:
                 makeStep<false>(shortestPathMeetingNode, shortestPathLength);
             }
             forward = !forward;
-
-            if(maximumDistance != EDGEWEIGHT_INFINITY && shortestPathLength <= maximumDistance) {
-                finished = true;
-            }
         }
         PQForward.clear();
         PQBackward.clear();
@@ -130,6 +126,9 @@ protected:
                     tentativeDistanceCurrent[v] = distanceV;
                     levelCurrent[v] = level;
                 }
+//                else if(distanceV == tentativeDistanceCurrent[v] && levelCurrent[v] > level) {
+//                    levelCurrent[v] = level;
+//                }
             }
             else {
                 PQCurrent.push({v, distanceV});
