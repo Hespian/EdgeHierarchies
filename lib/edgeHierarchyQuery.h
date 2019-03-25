@@ -18,6 +18,9 @@
 
 class EdgeHierarchyQuery {
 public:
+    int numVerticesSettled;
+    int numEdgesRelaxed;
+
     EdgeHierarchyQuery(EdgeHierarchyGraph &g) : g(g),
                                                 PQForward(g.getNumberOfNodes()),
                                                 PQBackward(g.getNumberOfNodes()),
@@ -27,9 +30,14 @@ public:
                                                 tentativeDistanceBackward(g.getNumberOfNodes()),
                                                 rankForward(g.getNumberOfNodes()),
                                                 rankBackward(g.getNumberOfNodes()) {
-
+        numVerticesSettled = 0;
+        numEdgesRelaxed = 0;
     };
 
+    void resetCounters() {
+        numVerticesSettled = 0;
+        numEdgesRelaxed = 0;
+    }
     EDGEWEIGHT_T getDistance(NODE_T s, NODE_T t) {
         return getDistance(s, t, EDGEWEIGHT_INFINITY);
     }
@@ -88,6 +96,10 @@ public:
                 makeStep<false>(shortestPathMeetingNode, shortestPathLength);
             }
             forward = !forward;
+            // TODO: Why is this wrong?
+            // if(maximumDistance != EDGEWEIGHT_INFINITY && shortestPathLength <= maximumDistance) {
+            //     finished = true;
+            // }
         }
         PQForward.clear();
         PQBackward.clear();
@@ -106,6 +118,7 @@ protected:
         vector<EDGERANK_T> &rankCurrent = forward ? rankForward : rankBackward;
 
         auto popped = PQCurrent.pop();
+        numVerticesSettled++;
 
         NODE_T u = popped.id;
         EDGERANK_T distanceU = popped.key;
@@ -119,6 +132,7 @@ protected:
 		}
 
         auto relaxFunc = [&] (NODE_T v, EDGERANK_T rank, EDGEWEIGHT_T weight) {
+            ++numEdgesRelaxed;
             EDGEWEIGHT_T distanceV = distanceU + weight;
             if(wasPushedCurrent.is_set(v)) {
                 if(distanceV < tentativeDistanceCurrent[v]) {
@@ -126,9 +140,9 @@ protected:
                     tentativeDistanceCurrent[v] = distanceV;
                     rankCurrent[v] = rank;
                 }
-//                else if(distanceV == tentativeDistanceCurrent[v] && rankCurrent[v] > rank) {
-//                    rankCurrent[v] = rank;
-//                }
+               else if(distanceV == tentativeDistanceCurrent[v] && rankCurrent[v] < rank) {
+                   rankCurrent[v] = rank;
+               }
             }
             else {
                 PQCurrent.push({v, distanceV});

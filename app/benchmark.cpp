@@ -22,6 +22,7 @@
 #include "edgeHierarchyConstruction.h"
 #include "dimacsGraphReader.h"
 #include "edgeRanking/shortcutCountingRoundsEdgeRanker.h"
+#include "edgeRanking/levelShortcutsHopsEdgeRanker.h"
 
 
 RoutingKit::ContractionHierarchy getCHFromGraph(EdgeHierarchyGraph &g) {
@@ -94,7 +95,8 @@ int main(int argc, char* argv[]) {
     EdgeHierarchyGraph originalGraph(g);
     EdgeHierarchyQuery originalGraphQuery(originalGraph);
 
-    EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
+    EdgeHierarchyConstruction<LevelShortcutsHopsEdgeRanker> construction(g, query);
+    // EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
 
     start = chrono::steady_clock::now();
     construction.run();
@@ -146,6 +148,8 @@ int main(int argc, char* argv[]) {
 
     srand (seed);
 
+    query.resetCounters();
+
     start = chrono::steady_clock::now();
     for(unsigned i = 0; i < numQueries; ++i) {
         NODE_T u = rand() % g.getNumberOfNodes();
@@ -159,6 +163,12 @@ int main(int argc, char* argv[]) {
 	cout << "Average query time (EH): "
          << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
          << " us" << endl;
+	cout << "Average number of vertices settled (EH): "
+         << query.numVerticesSettled/numQueries
+         << endl;
+	cout << "Average number of edges relaxed (EH): "
+         << query.numEdgesRelaxed/numQueries
+         << endl;
 
 
 
@@ -166,6 +176,7 @@ int main(int argc, char* argv[]) {
 
     srand (seed);
 
+    chQuery.resetCounters();
     start = chrono::steady_clock::now();
     for(unsigned i = 0; i < numQueries; ++i) {
         NODE_T u = rand() % g.getNumberOfNodes();
@@ -180,6 +191,7 @@ int main(int argc, char* argv[]) {
     cout << "Average query time (CH): "
          << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
          << " us" << endl;
+    chQuery.printCounters(numQueries);
 
     return numMistakes;
 }
