@@ -25,7 +25,7 @@ class EdgeHierarchyConstruction {
 public:
     EdgeHierarchyConstruction(EdgeHierarchyGraph &g, EdgeHierarchyQuery &query) : g(g), query(query), edgeRanker(g), bipartiteMVC(g.getNumberOfNodes()) {}
 
-    void setEdgeLevel(NODE_T u, NODE_T v, EDGERANK_T level) {
+    void setEdgeRank(NODE_T u, NODE_T v, EDGERANK_T level) {
         assert(g.getEdgeRank(u, v) == EDGERANK_INFINIY);
         // g.decreaseEdgeWeight(u, v, query.getDistance(u, v));
         g.setEdgeRank(u, v, level);
@@ -57,10 +57,10 @@ public:
     }
 
     void run() {
-        EDGECOUNT_T currentLevel = 1;
+        EDGECOUNT_T currentRank = 1;
         while(edgeRanker.hasNextEdge()) {
             auto nextEdge = edgeRanker.getNextEdge();
-            setEdgeLevel(nextEdge.first, nextEdge.second, currentLevel++);
+            setEdgeRank(nextEdge.first, nextEdge.second, currentRank++);
         }
     }
 

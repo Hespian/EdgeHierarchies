@@ -59,7 +59,7 @@ TEST(EdgeHierarchyConstructionTest, SetEdgeLevelSimple) {
 
     EdgeHierarchyConstruction<ArbitraryOrderEdgeRanker> construction(g, query);
 
-    construction.setEdgeLevel(1, 2, 1);
+    construction.setEdgeRank(1, 2, 1);
 
     EXPECT_EQ(g.getEdgeRank(1, 2), 1);
 
@@ -88,7 +88,7 @@ TEST(EdgeHierarchyConstructionTest, SetEdgeLevelNoNewEdge) {
 
     EdgeHierarchyConstruction<ArbitraryOrderEdgeRanker> construction(g, query);
 
-    construction.setEdgeLevel(1, 2, 1);
+    construction.setEdgeRank(1, 2, 1);
 
     EXPECT_EQ(g.getEdgeRank(1, 2), 1);
 
