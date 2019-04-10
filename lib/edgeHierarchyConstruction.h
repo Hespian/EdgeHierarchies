@@ -34,10 +34,11 @@ public:
 
         for(auto edgeToDecrease : shortestPathsLost.second) {
             g.decreaseEdgeWeight(get<0>(edgeToDecrease), get<1>(edgeToDecrease), get<2>(edgeToDecrease));
-            edgeRanker.updateEdge(get<0>(edgeToDecrease), get<1>(edgeToDecrease));
             if(g.getEdgeRank(get<0>(edgeToDecrease), get<1>(edgeToDecrease)) < EDGERANK_INFINIY) {
                 g.setEdgeRank(get<0>(edgeToDecrease), get<1>(edgeToDecrease), EDGERANK_INFINIY);
                 edgeRanker.addEdge(get<0>(edgeToDecrease), get<1>(edgeToDecrease));
+            } else {
+                edgeRanker.updateEdge(get<0>(edgeToDecrease), get<1>(edgeToDecrease));
             }
         }
         auto shortcutVertices = bipartiteMVC.getMinimumVertexCover(shortestPathsLost.first);
