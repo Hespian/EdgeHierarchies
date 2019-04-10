@@ -96,8 +96,8 @@ int main(int argc, char* argv[]) {
     EdgeHierarchyGraph originalGraph(g);
     EdgeHierarchyQuery originalGraphQuery(originalGraph);
 
-    EdgeHierarchyConstruction<LevelShortcutsHopsEdgeRanker> construction(g, query);
-    // EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
+    // EdgeHierarchyConstruction<LevelShortcutsHopsEdgeRanker> construction(g, query);
+    EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
 
     start = chrono::steady_clock::now();
     construction.run();
