@@ -9,6 +9,8 @@
 #pragma once
 
 #include "assert.h"
+#include <vector>
+#include <utility>
 
 #include "routingkit/id_queue.h"
 #include "routingkit/timestamp_flag.h"
@@ -109,6 +111,31 @@ public:
 protected:
 
     template<bool forward>
+    bool canStallAtNode(NODE_T v) {
+        RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
+        vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
+
+        bool result = false;
+
+        auto stallCheckFunc = [&] (NODE_T u, EDGEWEIGHT_T weight) {
+            if(wasPushedCurrent.is_set(u)) {
+                EDGEWEIGHT_T distanceV = tentativeDistanceCurrent[u] + weight;
+                if(distanceV < tentativeDistanceCurrent[v]) {
+                    result = true;
+                }
+            }
+        };
+
+        if(forward) {
+            g.forAllNeighborsIn(v, stallCheckFunc);
+        }
+        else {
+            g.forAllNeighborsOut(v, stallCheckFunc);
+        }
+        return result;
+    }
+
+    template<bool forward>
     void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength) {
         RoutingKit::MinIDQueue &PQCurrent = forward ? PQForward : PQBackward;
         RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
@@ -124,6 +151,9 @@ protected:
         EDGERANK_T distanceU = popped.key;
         assert(distanceU == tentativeDistanceCurrent[u]);
 
+        if(canStallAtNode<forward>(u)) {
+            return;
+        }
         if(wasPushedOther.is_set(u)){
 			if(shortestPathLength > distanceU + tentativeDistanceOther[u]){
 				shortestPathLength = distanceU + tentativeDistanceOther[u];
