@@ -18,10 +18,14 @@
 #include "definitions.h"
 #include "edgeHierarchyGraph.h"
 
+#define LOG_VERTICES_SETTLED true
+
 class EdgeHierarchyQuery {
 public:
     int numVerticesSettled;
     int numEdgesRelaxed;
+    std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledForward;
+    std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledBackward;
 
     EdgeHierarchyQuery(EdgeHierarchyGraph &g) : g(g),
                                                 PQForward(g.getNumberOfNodes()),
@@ -47,6 +51,11 @@ public:
     EDGEWEIGHT_T getDistance(NODE_T s, NODE_T t, EDGEWEIGHT_T maximumDistance) {
         wasPushedForward.reset_all();
         wasPushedBackward.reset_all();
+
+        if(LOG_VERTICES_SETTLED) {
+            verticesSettledForward.clear();
+            verticesSettledBackward.clear();
+        }
 
         PQForward.push({s, 0});
         PQBackward.push({t, 0});
@@ -154,6 +163,15 @@ protected:
         if(canStallAtNode<forward>(u)) {
             return;
         }
+
+        if(LOG_VERTICES_SETTLED) {
+            if(forward){
+                verticesSettledForward.push_back({u, distanceU});
+            } else {
+                verticesSettledBackward.push_back({u, distanceU});
+            }
+        }
+
         if(wasPushedOther.is_set(u)){
 			if(shortestPathLength > distanceU + tentativeDistanceOther[u]){
 				shortestPathLength = distanceU + tentativeDistanceOther[u];
