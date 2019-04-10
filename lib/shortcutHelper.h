@@ -13,6 +13,8 @@
 #include <cassert>
 #include <tuple>
 
+int numEquals = 0;
+
 // first: shortest paths lost; second: edges to decrease
 template<bool returnEdgesToDecrease>
 pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> getShortestPathsLost(NODE_T u, NODE_T v, EDGEWEIGHT_T uVWeight, EdgeHierarchyGraph &g, EdgeHierarchyQuery &query) {
@@ -31,6 +33,9 @@ pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> 
                                                                                      uPrime, vPrime,
                                                                                      uPrimeVPrimeWeight);
 
+                                                                             if(g.getEdgeRank(u, v) != EDGERANK_INFINIY - 1 && distanceInQueryGraph == uPrimeVPrimeWeight) {
+                                                                                 ++numEquals;
+                                                                             }
                                                                              if (distanceInQueryGraph >=
                                                                                  uPrimeVPrimeWeight) {
                                                                                  if (g.hasEdge(uPrime, v)) {

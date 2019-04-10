@@ -87,6 +87,7 @@ int main(int argc, char* argv[]) {
          << " ms" << endl;
 
 
+    cout << "CH has " << ch.forward.first_out.back() + ch.backward.first_out.back() << " edges" << endl;
 
 
 
@@ -108,6 +109,8 @@ int main(int argc, char* argv[]) {
          << " ms" << endl;
 
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+
+    cout << "Distance in Query graph was equal to removed path " << numEquals << " times" <<endl;
 
     srand (seed);
     int numMistakes = 0;
