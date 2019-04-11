@@ -124,26 +124,6 @@ TEST(EdgeHierarchyQueryTests, PartialHierarchy) {
     EXPECT_EQ(distance, 4);
 }
 
-TEST(EdgeHierarchyQueryTests, OnePossibleOneImpossible) {
-    EdgeHierarchyGraph g(5);
-    EdgeHierarchyQuery query(g);
-    g.addEdge(0, 1, 1);
-    g.addEdge(1, 2, 1);
-    g.addEdge(2, 3, 1);
-    g.addEdge(3, 4, 1);
-    g.addEdge(0, 2, 3);
-    g.addEdge(2, 4, 3);
-    g.setEdgeRank(0, 1, 2);
-    g.setEdgeRank(1, 2, 0);
-    g.setEdgeRank(2, 3, 1);
-    g.setEdgeRank(3, 4, 3);
-    g.setEdgeRank(0, 2, 4);
-    g.setEdgeRank(2, 4, 5);
-
-    EDGEWEIGHT_T distance = query.getDistance(0, 4);
-    EXPECT_EQ(distance, 6);
-}
-
 TEST(EdgeHierarchyGraphTest, LongBidirectedPath) {
     EdgeHierarchyGraph g(10);
     g.addEdge(0, 1, 1);
