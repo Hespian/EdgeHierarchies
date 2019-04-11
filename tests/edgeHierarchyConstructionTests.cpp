@@ -77,26 +77,6 @@ TEST(EdgeHierarchyConstructionTest, SetEdgeLevelSimple) {
     EXPECT_EQ(query.getDistance(0, 3), 3);
 }
 
-TEST(EdgeHierarchyConstructionTest, SetEdgeLevelNoNewEdge) {
-    EdgeHierarchyGraph g(4);
-    g.addEdge(0, 1, 1);
-    g.addEdge(1, 2, 1);
-    g.addEdge(2, 3, 1);
-    g.addEdge(0, 3, 3);
-
-    EdgeHierarchyQuery query(g);
-
-    EdgeHierarchyConstruction<ArbitraryOrderEdgeRanker> construction(g, query);
-
-    construction.setEdgeRank(1, 2, 1);
-
-    EXPECT_EQ(g.getEdgeRank(1, 2), 1);
-
-    EXPECT_FALSE(g.hasEdge(0, 2) || g.hasEdge(1,3));
-
-    EXPECT_EQ(query.getDistance(0, 3), 3);
-}
-
 
 TEST(EdgeHierarchyConstructionTest, RunSimple) {
     EdgeHierarchyGraph g(10);
