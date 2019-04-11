@@ -21,3 +21,8 @@ add_executable(CHEHCombination CHEHCombination.cpp)
 target_compile_options(CHEHCombination PRIVATE -Wall)
 target_compile_options(CHEHCombination PRIVATE -g)
 target_link_libraries(CHEHCombination tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)
+
+add_executable(benchmarkTurncosts benchmarkTurncosts.cpp)
+target_compile_options(benchmarkTurncosts PRIVATE -Wall)
+target_compile_options(benchmarkTurncosts PRIVATE -g)
+target_link_libraries(benchmarkTurncosts tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)

@@ -173,6 +173,40 @@ public:
         edgesSorted = true;
     }
 
+    EdgeHierarchyGraph getTurnCostGraph() {
+        std::vector<EDGEID_T> outDegree(n + 1);
+        outDegree[0] = 0;
+        forAllNodes([&] (NODE_T v) {
+                outDegree[v + 1] = getOutDegree(v);
+            });
+
+        std::vector<EDGEID_T> nodeBegin(n + 1);
+        std::partial_sum(outDegree.begin(), outDegree.end(), nodeBegin.begin());
+
+        EdgeHierarchyGraph result(nodeBegin.back());
+
+        forAllNodes([&] (NODE_T u) {
+                EDGECOUNT_T uNeighborCounter = 0;
+                forAllNeighborsOut(u, [&] (NODE_T v, EDGEWEIGHT_T originalWeight) {
+                        NODE_T uNew = nodeBegin[u] + uNeighborCounter;
+                        EDGECOUNT_T vNeighborCounter = 0;
+                        forAllNeighborsOut(v, [&] (NODE_T x, EDGEWEIGHT_T ignoreWeight) {
+                                NODE_T vNew = nodeBegin[v] + vNeighborCounter;
+                                EDGEWEIGHT_T newWeight = originalWeight;
+                                if(x == u) {
+                                    newWeight += 100;
+                                }
+                                result.addEdge(uNew, vNew, newWeight);
+                                ++vNeighborCounter;
+                            });
+                        ++uNeighborCounter;
+                    });
+            });
+
+        return result;
+
+    }
+
 /******************************************************************************/
 
 protected:
