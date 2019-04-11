@@ -26,6 +26,7 @@ class ShortcutCountingRoundsEdgeRanker {
 
 public:
     ShortcutCountingRoundsEdgeRanker(EdgeHierarchyGraph &g) : g(g), query(g), mvc(g.getNumberOfNodes()), numShortcutEdges(g.getNumberOfEdges()), edgesInGraph(g.getNumberOfEdges()) {
+        std::cout << "Shortcut counting rounds edge ranker" << std::endl;
         g.forAllNodes( [&] (NODE_T u) {
                 g.forAllNeighborsOut(u, [&] (NODE_T v, EDGEWEIGHT_T weight) {
                         addEdge(u, v);
