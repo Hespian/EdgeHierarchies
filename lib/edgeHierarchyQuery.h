@@ -18,12 +18,13 @@
 #include "definitions.h"
 #include "edgeHierarchyGraph.h"
 
-#define LOG_VERTICES_SETTLED true
+#define LOG_VERTICES_SETTLED false
 
 class EdgeHierarchyQuery {
 public:
     int numVerticesSettled;
     int numEdgesRelaxed;
+    int popCount;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledForward;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledBackward;
 
@@ -51,6 +52,8 @@ public:
     EDGEWEIGHT_T getDistance(NODE_T s, NODE_T t, EDGEWEIGHT_T maximumDistance) {
         wasPushedForward.reset_all();
         wasPushedBackward.reset_all();
+
+        popCount = 0;
 
         if(LOG_VERTICES_SETTLED) {
             verticesSettledForward.clear();
@@ -127,19 +130,22 @@ protected:
         bool result = false;
 
         auto stallCheckFunc = [&] (NODE_T u, EDGEWEIGHT_T weight) {
+            ++numEdgesRelaxed;
             if(wasPushedCurrent.is_set(u)) {
                 EDGEWEIGHT_T distanceV = tentativeDistanceCurrent[u] + weight;
                 if(distanceV < tentativeDistanceCurrent[v]) {
                     result = true;
+                    return true;
                 }
             }
+            return false;
         };
 
         if(forward) {
-            g.forAllNeighborsIn(v, stallCheckFunc);
+            g.forAllNeighborsInAndStop(v, stallCheckFunc);
         }
         else {
-            g.forAllNeighborsOut(v, stallCheckFunc);
+            g.forAllNeighborsOutAndStop(v, stallCheckFunc);
         }
         return result;
     }
@@ -160,9 +166,9 @@ protected:
         EDGERANK_T distanceU = popped.key;
         assert(distanceU == tentativeDistanceCurrent[u]);
 
-        if(canStallAtNode<forward>(u)) {
-            return;
-        }
+        // if(canStallAtNode<forward>(u)) {
+        //     return;
+        // }
 
         if(LOG_VERTICES_SETTLED) {
             if(forward){

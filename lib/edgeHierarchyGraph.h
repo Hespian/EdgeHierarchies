@@ -130,6 +130,26 @@ public:
         }
     }
 
+    template<typename F>
+    void forAllNeighborsInAndStop(NODE_T v, F &&callback) {
+        for(size_t i = 0; i < neighborsIn[v].size(); ++i) {
+            bool stop = callback(neighborsIn[v][i].neighbor, neighborsIn[v][i].weight);
+            if(stop) {
+                return;
+            }
+        }
+    }
+
+    template<typename F>
+    void forAllNeighborsOutAndStop(NODE_T v, F &&callback) {
+        for(size_t i = 0; i < neighborsOut[v].size(); ++i) {
+            bool stop = callback(neighborsOut[v][i].neighbor, neighborsOut[v][i].weight);
+            if(stop) {
+                return;
+            }
+        }
+    }
+
 
     template<typename F>
     void forAllNeighborsInWithHighRank(NODE_T v, EDGERANK_T rankThreshold, F &&callback) {
