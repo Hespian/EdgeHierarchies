@@ -229,3 +229,55 @@ TEST(EdgeHierarchyGraphTest, DecreaseEdgeWeightDuplicate) {
 
     EXPECT_EQ(g.getEdgeWeight(0, 1), 1);
 }
+
+struct edge {
+    NODE_T u;
+    NODE_T v;
+    EDGEWEIGHT_T weight;
+};
+
+TEST(EdgeHierarchyGraphTest, TurnCostSimple) {
+    // This test is VERY implementation dependent!
+    EdgeHierarchyGraph g(5);
+
+
+    g.addEdge(0, 1, 1);
+    g.addEdge(1, 3, 1);
+    g.addEdge(1, 2, 1);
+    g.addEdge(2, 1, 1);
+    g.addEdge(2, 3, 1);
+    g.addEdge(3, 1, 1);
+    g.addEdge(3, 4, 1);
+    g.addEdge(4, 2, 1);
+
+    auto turnCostGraph = g.getTurnCostGraph();
+
+    vector<edge> expectedEdges = {
+        {0, 1, 1},
+        {0, 2, 1},
+        {1, 5, 101},
+        {1, 6, 1},
+        {2, 3, 101},
+        {2, 4, 1},
+        {3, 2, 101},
+        {3, 1, 1},
+        {4, 5, 1},
+        {4, 6, 1},
+        {5, 1, 101},
+        {5, 2, 1},
+        {6, 7, 1},
+        {7, 3, 1},
+        {7, 4, 1},
+    };
+
+    EXPECT_EQ(turnCostGraph.getNumberOfNodes(), 8);
+
+    EXPECT_EQ(turnCostGraph.getNumberOfEdges(), expectedEdges.size());
+
+    for(auto e: expectedEdges) {
+        // cout << e.u << " " << e.v << endl;
+        EXPECT_TRUE(turnCostGraph.hasEdge(e.u, e.v));
+        EXPECT_EQ(turnCostGraph.getEdgeWeight(e.u, e.v), e.weight);
+    }
+
+}
