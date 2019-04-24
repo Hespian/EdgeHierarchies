@@ -1,5 +1,5 @@
 /*******************************************************************************
- * lib/edgeHierarchyQuery.h
+ * lib/edgeHierarchyQueryOnly.h
  *
  * Copyright (C) 2018-2019 Demian Hespe <hespe@kit.edu>
  *
@@ -16,11 +16,11 @@
 #include "routingkit/timestamp_flag.h"
 
 #include "definitions.h"
-#include "edgeHierarchyGraph.h"
+#include "edgeHierarchyGraphQueryOnly.h"
 
 #define LOG_VERTICES_SETTLED false
 
-class EdgeHierarchyQuery {
+class EdgeHierarchyQueryOnly {
 public:
     int numVerticesSettled;
     int numEdgesRelaxed;
@@ -28,7 +28,7 @@ public:
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledForward;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledBackward;
 
-    EdgeHierarchyQuery(EdgeHierarchyGraph &g) : g(g),
+    EdgeHierarchyQueryOnly(EdgeHierarchyGraphQueryOnly &g) : g(g),
                                                 PQForward(g.getNumberOfNodes()),
                                                 PQBackward(g.getNumberOfNodes()),
                                                 wasPushedForward(g.getNumberOfNodes()),
@@ -45,11 +45,8 @@ public:
         numVerticesSettled = 0;
         numEdgesRelaxed = 0;
     }
-    EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT) {
-        return getDistance(externalS, externalT, EDGEWEIGHT_INFINITY);
-    }
 
-    EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT, EDGEWEIGHT_T maximumDistance) {
+    EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT) {
         NODE_T s = g.getInternalNodeNumber(externalS);
         NODE_T t = g.getInternalNodeNumber(externalT);
         wasPushedForward.reset_all();
@@ -82,7 +79,7 @@ public:
             if(PQForward.empty()) {
                 forwardFinished = true;
             }
-            else if(PQForward.peek().key >= shortestPathLength || PQForward.peek().key >= maximumDistance) {
+            else if(PQForward.peek().key >= shortestPathLength) {
                 forwardFinished = true;
             }
 
@@ -90,7 +87,7 @@ public:
             if(PQBackward.empty()) {
                 backwardFinished = true;
             }
-            else if(PQBackward.peek().key >= shortestPathLength || PQBackward.peek().key >= maximumDistance) {
+            else if(PQBackward.peek().key >= shortestPathLength) {
                 backwardFinished = true;
             }
 
@@ -216,7 +213,7 @@ protected:
         }
     }
 
-    EdgeHierarchyGraph &g;
+    EdgeHierarchyGraphQueryOnly &g;
     RoutingKit::MinIDQueue PQForward;
     RoutingKit::MinIDQueue PQBackward;
     RoutingKit::TimestampFlags wasPushedForward;

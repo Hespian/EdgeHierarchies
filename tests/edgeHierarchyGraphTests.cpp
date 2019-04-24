@@ -281,3 +281,29 @@ TEST(EdgeHierarchyGraphTest, TurnCostSimple) {
     }
 
 }
+
+TEST(EdgeHierarchyGraphTest, dfsOrderSimple) {
+    EdgeHierarchyGraph g(4);
+
+    g.addEdge(0, 1, 1);
+    g.addEdge(3, 1, 3);
+    g.addEdge(1, 2, 4);
+    g.addEdge(1, 3, 2);
+    g.addEdge(2, 0, 5);
+
+    EdgeHierarchyGraph orderedG = g.getDFSOrderGraph<EdgeHierarchyGraph>();
+
+    EXPECT_EQ(orderedG.getNumberOfEdges(), orderedG.getNumberOfEdges());
+    EXPECT_EQ(orderedG.getNumberOfNodes(), orderedG.getNumberOfNodes());
+
+    EXPECT_TRUE(orderedG.hasEdge(0, 2));
+    EXPECT_EQ(orderedG.getEdgeWeight(0, 2), g.getEdgeWeight(3, 1));
+    EXPECT_TRUE(orderedG.hasEdge(2, 0));
+    EXPECT_EQ(orderedG.getEdgeWeight(2, 0), g.getEdgeWeight(1, 3));
+    EXPECT_TRUE(orderedG.hasEdge(2, 1));
+    EXPECT_EQ(orderedG.getEdgeWeight(2, 1), g.getEdgeWeight(1, 2));
+    EXPECT_TRUE(orderedG.hasEdge(1, 3));
+    EXPECT_EQ(orderedG.getEdgeWeight(1, 3), g.getEdgeWeight(2, 0));
+    EXPECT_TRUE(orderedG.hasEdge(3, 2));
+    EXPECT_EQ(orderedG.getEdgeWeight(3, 2), g.getEdgeWeight(0, 1));
+}

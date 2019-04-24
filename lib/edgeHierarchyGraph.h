@@ -13,20 +13,16 @@
 #include <numeric>
 
 
+
 #include "definitions.h"
 
 using namespace std;
 
-struct edgeInfo {
-    NODE_T neighbor;
-    EDGEWEIGHT_T weight;
-    EDGERANK_T rank;
-};
-
 class EdgeHierarchyGraph {
 public:
-    EdgeHierarchyGraph(NODE_T n) : n(n), m(0), neighborsOut(n), neighborsIn(n), edgesSorted(false) {
-
+    EdgeHierarchyGraph(NODE_T n) : n(n), m(0), neighborsOut(n), neighborsIn(n), edgesSorted(false), nodeMap(n), reverseNodeMap(n) {
+        std::iota(std::begin(nodeMap), std::end(nodeMap), 0);
+        std::iota(std::begin(reverseNodeMap), std::end(reverseNodeMap), 0);
     }
 
     NODE_T getNumberOfNodes() {
@@ -35,6 +31,22 @@ public:
 
     EDGECOUNT_T getNumberOfEdges() {
         return m;
+    }
+
+    void setNodeMap(std::vector<NODE_T> &newMap) {
+        nodeMap.swap(newMap);
+
+        for(NODE_T i = 0; i < n; ++i) {
+            reverseNodeMap[nodeMap[i]] = i;
+        }
+    }
+
+    NODE_T getInternalNodeNumber(NODE_T externalNumber) {
+        return nodeMap[externalNumber];
+    }
+
+    NODE_T getExternalNodeNumber(NODE_T internalNumber) {
+        return reverseNodeMap[internalNumber];
     }
 
     NODE_T getInDegree(NODE_T v) {
@@ -227,6 +239,71 @@ public:
 
     }
 
+    template<typename T>
+    T getDFSOrderGraph() {
+        auto result = T(n);
+
+        NODE_T dfsCount = 0;
+        std::vector<NODE_T> dfsNum(n, NODE_INVALID);
+        std::vector<bool> marks(n, false);
+
+        // forAllNodes([&] (NODE_T v) {
+        //         DFS(v, marks, dfsNum, dfsCount);
+        //     });
+
+        std::vector<NODE_T> stack;
+
+        while(!std::all_of(marks.begin(), marks.end(), [](bool v) { return v; })) {
+            for(NODE_T v = 0; v < n; ++v) {
+                if(!marks[v]) {
+                    stack.push_back(v);
+                    break;
+                }
+            }
+
+            while(!stack.empty()) {
+                NODE_T v = stack.back();
+                if(marks[v]) {
+                    stack.pop_back();
+                    if(dfsNum[v] == NODE_INVALID) {
+                        dfsNum[v] = dfsCount++;
+                    }
+                } else {
+                    marks[v] = true;
+                    for(int i = neighborsOut[v].size() - 1; i >=0; --i) {
+                        NODE_T w = neighborsOut[v][i].neighbor;
+                        if(!marks[w]) {
+                            stack.push_back(w);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        forAllNodes([&] (NODE_T v) {
+                forAllNeighborsOut(v, [&] (NODE_T w, EDGEWEIGHT_T weight) {
+                        result.addEdge(dfsNum[v], dfsNum[w], weight);
+                        result.setEdgeRank(dfsNum[v], dfsNum[w], getEdgeRank(v, w));
+                    });
+            });
+
+        return result;
+    }
+
+    void DFS(NODE_T v, std::vector<bool> &marks, std::vector<NODE_T> &dfsNum, NODE_T &dfsCount) {
+        if(marks[v])
+            return;
+        marks[v] = true;
+
+        forAllNeighborsOut(v, [&] (NODE_T w, EDGEWEIGHT_T weight) {
+                DFS(w, marks, dfsNum, dfsCount);
+            });
+
+        dfsNum[v] = dfsCount++;
+
+    }
+
 /******************************************************************************/
 
 protected:
@@ -235,4 +312,6 @@ protected:
     vector<vector<edgeInfo>> neighborsOut;
     vector<vector<edgeInfo>> neighborsIn;
     bool edgesSorted;
+    vector<NODE_T> nodeMap;
+    vector<NODE_T> reverseNodeMap;
 };

@@ -39,12 +39,36 @@ public:
         if(edgesInGraph.capacity() <= edgeId) {
             edgesInGraph.resize(edgesInGraph.capacity() * 2);
             numShortcutEdges.resize(numShortcutEdges.size() * 2);
+            // needsUpdate.resize(needsUpdate.size() * 2, false);
             assert(numShortcutEdges.size() == edgesInGraph.capacity());
         }
         edgesInGraph.insert(edgeId);
+
+        // g.forAllNeighborsOutWithHighRank(v, g.getEdgeRank(u, v), [&] (NODE_T x, EDGEWEIGHT_T weight, EDGERANK_T rank) {
+        //         EDGEID_T neighborEdgeId = edgeIdCreator.getEdgeId(v, x);
+        //         needsUpdate[neighborEdgeId] = true;
+        //     });
+        // g.forAllNeighborsInWithHighRank(u, g.getEdgeRank(u, v), [&] (NODE_T x, EDGEWEIGHT_T weight, EDGERANK_T rank) {
+        //         EDGEID_T neighborEdgeId = edgeIdCreator.getEdgeId(x, u);
+        //         needsUpdate[neighborEdgeId] = true;
+        //     });
+
+        // needsUpdate[edgeId] = true;
     }
 
     void updateEdge(NODE_T u, NODE_T v) {
+        // EDGEID_T edgeId = edgeIdCreator.getEdgeId(u, v);
+
+        // g.forAllNeighborsOutWithHighRank(v, g.getEdgeRank(u, v), [&] (NODE_T x, EDGEWEIGHT_T weight, EDGERANK_T rank) {
+        //         EDGEID_T neighborEdgeId = edgeIdCreator.getEdgeId(v, x);
+        //         needsUpdate[neighborEdgeId] = true;
+        //     });
+        // g.forAllNeighborsInWithHighRank(u, g.getEdgeRank(u, v), [&] (NODE_T x, EDGEWEIGHT_T weight, EDGERANK_T rank) {
+        //         EDGEID_T neighborEdgeId = edgeIdCreator.getEdgeId(x, u);
+        //         needsUpdate[neighborEdgeId] = true;
+        //     });
+
+        // needsUpdate[edgeId] = true;
     }
 
     pair<NODE_T, NODE_T> getNextEdge() {
@@ -55,7 +79,9 @@ public:
         EDGEID_T nextEdgeId = currentRoundEdges.back();
         currentRoundEdges.pop_back();
         edgesInGraph.remove(nextEdgeId);
-        return edgeIdCreator.getEdgeFromId(nextEdgeId);
+        auto edge = edgeIdCreator.getEdgeFromId(nextEdgeId);
+        updateEdge(edge.first, edge.second);
+        return edge;
     }
 
     bool hasNextEdge() {
@@ -64,7 +90,13 @@ public:
 
 protected:
     void getNextRoundEdges() {
+        EDGEID_T numUpdates = 0;
         for(EDGEID_T edgeId : edgesInGraph) {
+            // if(!needsUpdate[edgeId]) {
+            //     continue;
+            // }
+            // ++numUpdates;
+            // needsUpdate[edgeId] = false;
             pair<NODE_T, NODE_T> edge = edgeIdCreator.getEdgeFromId(edgeId);
             NODE_T u = edge.first;
             NODE_T v = edge.second;
@@ -74,6 +106,8 @@ protected:
             g.setEdgeRank(u, v, EDGERANK_INFINIY);
             numShortcutEdges[edgeId] = mvc.getMinimumVertexCoverSize(shortestPathsLost.first);
         }
+
+        // std::cout << "Updated " << numUpdates << " out of " << edgesInGraph.size() << " Edges. (" << (100.0 * numUpdates) / edgesInGraph.size() << "%)" << std::endl;
 
         for(EDGEID_T edgeId : edgesInGraph) {
             pair<NODE_T, NODE_T> edge = edgeIdCreator.getEdgeFromId(edgeId);
@@ -115,4 +149,5 @@ protected:
     vector<EDGEID_T> numShortcutEdges;
     ArraySet<EDGEID_T> edgesInGraph;
     vector<EDGEID_T> currentRoundEdges;
+    // vector<bool> needsUpdate;
 };

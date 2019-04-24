@@ -19,3 +19,9 @@
 #define EDGERANK_INFINIY std::numeric_limits<EDGERANK_T>::max()
 #define EDGEID_T uint64_t
 #define EDGEID_EMPTY_KEY std::numeric_limits<EDGEID_T>::max()
+
+struct edgeInfo {
+    NODE_T neighbor;
+    EDGEWEIGHT_T weight;
+    EDGERANK_T rank;
+};

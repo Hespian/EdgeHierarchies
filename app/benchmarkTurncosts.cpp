@@ -19,6 +19,8 @@
 #include "definitions.h"
 #include "edgeHierarchyGraph.h"
 #include "edgeHierarchyQuery.h"
+#include "edgeHierarchyGraphQueryOnly.h"
+#include "edgeHierarchyQueryOnly.h"
 #include "edgeHierarchyConstruction.h"
 #include "dimacsGraphReader.h"
 #include "edgeRanking/shortcutCountingRoundsEdgeRanker.h"
@@ -86,6 +88,14 @@ int main(int argc, char* argv[]) {
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << " ms" << endl;
 
+    // start = chrono::steady_clock::now();
+    // g = g.getDFSOrderGraph();
+	// end = chrono::steady_clock::now();
+
+	// cout << "Sorting graph took "
+    //      << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+    //      << " ms" << endl;
+
     cout << "Turn cost graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
     start = chrono::steady_clock::now();
@@ -114,11 +124,26 @@ int main(int argc, char* argv[]) {
     start = chrono::steady_clock::now();
     construction.run();
     g.sortEdges();
+    EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
+    EdgeHierarchyQueryOnly newQuery = EdgeHierarchyQueryOnly(newG);
+    newG.makeConsecutive();
+    // EdgeHierarchyGraph newG = g.getDFSOrderGraph<EdgeHierarchyGraph>();
+    // EdgeHierarchyQuery newQuery = EdgeHierarchyQuery(newG);
+    // newG.sortEdges();
 	end = chrono::steady_clock::now();
 
 	cout << "EH Construction took "
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << " ms" << endl;
+
+    // start = chrono::steady_clock::now();
+    // g = g.getDFSOrderGraph();
+    // g.sortEdges();
+	// end = chrono::steady_clock::now();
+
+	// cout << "Sorting graph took "
+    //      << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+    //      << " ms" << endl;
 
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
@@ -163,28 +188,36 @@ int main(int argc, char* argv[]) {
 
     srand (seed);
 
-    query.resetCounters();
+    // query.resetCounters();
+    newQuery.resetCounters();
 
     start = chrono::steady_clock::now();
     for(unsigned i = 0; i < numQueries; ++i) {
         NODE_T u = rand() % g.getNumberOfNodes();
         NODE_T v = rand() % g.getNumberOfNodes();
 
-        EDGEWEIGHT_T distance = query.getDistance(u, v);
+        EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
+        // EDGEWEIGHT_T distance = query.getDistance(u, v);
         (void) distance;
+        auto now = chrono::steady_clock::now();
     }
 	end = chrono::steady_clock::now();
 
 	cout << "Average query time (EH): "
          << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
          << " us" << endl;
-	cout << "Average number of vertices settled (EH): "
-         << query.numVerticesSettled/numQueries
+	// cout << "Average number of vertices settled (EH): "
+    //      << query.numVerticesSettled/numQueries
+    //      << endl;
+	// cout << "Average number of edges relaxed (EH): "
+    //      << query.numEdgesRelaxed/numQueries
+    //      << endl;
+    cout << "Average number of vertices settled (EH): "
+         << newQuery.numVerticesSettled/numQueries
          << endl;
-	cout << "Average number of edges relaxed (EH): "
-         << query.numEdgesRelaxed/numQueries
+    cout << "Average number of edges relaxed (EH): "
+         << newQuery.numEdgesRelaxed/numQueries
          << endl;
-
 
 
 

@@ -19,9 +19,12 @@
 #include "definitions.h"
 #include "edgeHierarchyGraph.h"
 #include "edgeHierarchyQuery.h"
+#include "edgeHierarchyGraphQueryOnly.h"
+#include "edgeHierarchyQueryOnly.h"
 #include "edgeHierarchyConstruction.h"
 #include "dimacsGraphReader.h"
 #include "edgeRanking/shortcutCountingRoundsEdgeRanker.h"
+#include "edgeRanking/shortcutCountingSortingRoundsEdgeRanker.h"
 #include "edgeRanking/levelShortcutsHopsEdgeRanker.h"
 
 
@@ -75,6 +78,14 @@ int main(int argc, char* argv[]) {
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << " ms" << endl;
 
+    start = chrono::steady_clock::now();
+    // g = g.getDFSOrderGraph<EdgeHierarchyGraph>();
+	end = chrono::steady_clock::now();
+
+	cout << "Sorting graph took "
+         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+         << " ms" << endl;
+
     cout << "Input graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
     start = chrono::steady_clock::now();
@@ -98,10 +109,14 @@ int main(int argc, char* argv[]) {
 
     // EdgeHierarchyConstruction<LevelShortcutsHopsEdgeRanker> construction(g, query);
     EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
+    // EdgeHierarchyConstruction<ShortcutCountingSortingRoundsEdgeRanker> construction(g, query);
 
     start = chrono::steady_clock::now();
     construction.run();
     g.sortEdges();
+    EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
+    EdgeHierarchyQueryOnly newQuery = EdgeHierarchyQueryOnly(newG);
+    newG.makeConsecutive();
 	end = chrono::steady_clock::now();
 
 	cout << "EH Construction took "
@@ -109,6 +124,8 @@ int main(int argc, char* argv[]) {
          << " ms" << endl;
 
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+
+    cout << "DFS ordered edge hierarchy graph has " << newG.getNumberOfNodes() << " vertices and " << newG.getNumberOfEdges() << " edges" << endl;
 
     cout << "Distance in Query graph was equal to removed path " << numEquals << " times" <<endl;
 
@@ -151,26 +168,44 @@ int main(int argc, char* argv[]) {
 
     srand (seed);
 
-    query.resetCounters();
+    // query.resetCounters();
+    newQuery.resetCounters();
 
     start = chrono::steady_clock::now();
     for(unsigned i = 0; i < numQueries; ++i) {
         NODE_T u = rand() % g.getNumberOfNodes();
         NODE_T v = rand() % g.getNumberOfNodes();
 
-        EDGEWEIGHT_T distance = query.getDistance(u, v);
+        EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
+        // EDGEWEIGHT_T distance = query.getDistance(u, v);
         (void) distance;
+        auto now = chrono::steady_clock::now();
+        // cout << "Average query time (EH): "
+        //      << chrono::duration_cast<chrono::microseconds>(now - start).count() / (i + 1)
+        //      << " us" << endl;
+        // cout << "Average number of vertices settled (EH): "
+        //      << newQuery.numVerticesSettled/numQueries
+        //      << endl;
+        // cout << "Average number of edges relaxed (EH): "
+        //      << newQuery.numEdgesRelaxed/numQueries
+        //      << endl;
     }
 	end = chrono::steady_clock::now();
 
 	cout << "Average query time (EH): "
          << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
          << " us" << endl;
-	cout << "Average number of vertices settled (EH): "
-         << query.numVerticesSettled/numQueries
+	// cout << "Average number of vertices settled (EH): "
+    //      << query.numVerticesSettled/numQueries
+    //      << endl;
+	// cout << "Average number of edges relaxed (EH): "
+    //      << query.numEdgesRelaxed/numQueries
+    //      << endl;
+    cout << "Average number of vertices settled (EH): "
+         << newQuery.numVerticesSettled/numQueries
          << endl;
-	cout << "Average number of edges relaxed (EH): "
-         << query.numEdgesRelaxed/numQueries
+    cout << "Average number of edges relaxed (EH): "
+         << newQuery.numEdgesRelaxed/numQueries
          << endl;
 
 
