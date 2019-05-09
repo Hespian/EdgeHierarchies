@@ -77,6 +77,16 @@ int main(int argc, char* argv[]) {
     cout << "Input graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
     start = chrono::steady_clock::now();
+    g = g.getTurnCostGraph();
+    end = chrono::steady_clock::now();
+
+	cout << "Adding turn costs took "
+         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+         << " ms" << endl;
+
+    cout << "Turn cost graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+
+    start = chrono::steady_clock::now();
     auto ch = getCHFromGraph(g);
     RoutingKit::ContractionHierarchyQuery chQuery(ch);
     end = chrono::steady_clock::now();
