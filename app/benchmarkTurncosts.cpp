@@ -26,6 +26,7 @@
 #include "edgeRanking/shortcutCountingRoundsEdgeRanker.h"
 #include "edgeRanking/shortcutCountingSortingRoundsEdgeRanker.h"
 #include "edgeRanking/levelShortcutsHopsEdgeRanker.h"
+#include "edgeRanking/shortcutsHopsRoundsEdgeRanker.h"
 
 
 RoutingKit::ContractionHierarchy getCHFromGraph(EdgeHierarchyGraph &g) {
@@ -119,6 +120,7 @@ int main(int argc, char* argv[]) {
 
     // EdgeHierarchyConstruction<LevelShortcutsHopsEdgeRanker> construction(g, query);
     EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
+    // EdgeHierarchyConstruction<ShortcutsHopsRoundsEdgeRanker> construction(g, query);
     // EdgeHierarchyConstruction<ShortcutCountingSortingRoundsEdgeRanker> construction(g, query);
 
     start = chrono::steady_clock::now();
