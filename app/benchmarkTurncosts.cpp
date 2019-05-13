@@ -158,7 +158,7 @@ int main(int argc, char* argv[]) {
         NODE_T u = rand() % g.getNumberOfNodes();
         NODE_T v = rand() % g.getNumberOfNodes();
 
-        EDGEWEIGHT_T distance = query.getDistance(u, v);
+        EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
 
 //        EDGEWEIGHT_T originalGraphDistance = originalGraphQuery.getDistance(u, v);
 
