@@ -158,6 +158,9 @@ public:
     }
 
     void sortEdges() {
+        if(edgesSorted) {
+            return;
+        }
         for(NODE_T v = 0; v < n; ++v) {
             sort(neighborsOut[v].begin(), neighborsOut[v].end(), [&] (edgeInfo i, edgeInfo j) {
                     return i.rank > j.rank;
