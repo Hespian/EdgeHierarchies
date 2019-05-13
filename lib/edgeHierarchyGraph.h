@@ -280,6 +280,12 @@ public:
             }
         }
 
+        assert(dfsCount == n);
+        if(dfsCount != n) {
+            std::cout << "Error! dfsCount " << dfsCount << " instead of " << n << std::endl;
+            exit(1);
+        }
+
 
         forAllNodes([&] (NODE_T v) {
                 forAllNeighborsOut(v, [&] (NODE_T w, EDGEWEIGHT_T weight) {
@@ -287,6 +293,7 @@ public:
                         result.setEdgeRank(dfsNum[v], dfsNum[w], getEdgeRank(v, w));
                     });
             });
+        result.setNodeMap(dfsNum);
 
         return result;
     }
