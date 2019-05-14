@@ -78,14 +78,6 @@ int main(int argc, char* argv[]) {
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << " ms" << endl;
 
-    start = chrono::steady_clock::now();
-    // g = g.getDFSOrderGraph<EdgeHierarchyGraph>();
-	end = chrono::steady_clock::now();
-
-	cout << "Sorting graph took "
-         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
-         << " ms" << endl;
-
     cout << "Input graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
     start = chrono::steady_clock::now();
@@ -114,6 +106,8 @@ int main(int argc, char* argv[]) {
     start = chrono::steady_clock::now();
     construction.run();
     g.sortEdges();
+    // EdgeHierarchyGraph newG = g;
+    // EdgeHierarchyQuery newQuery = query;
     EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
     EdgeHierarchyQueryOnly newQuery = EdgeHierarchyQueryOnly(newG);
     newG.makeConsecutive();
@@ -179,7 +173,7 @@ int main(int argc, char* argv[]) {
         EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
         // EDGEWEIGHT_T distance = query.getDistance(u, v);
         (void) distance;
-        auto now = chrono::steady_clock::now();
+        // auto now = chrono::steady_clock::now();
         // cout << "Average query time (EH): "
         //      << chrono::duration_cast<chrono::microseconds>(now - start).count() / (i + 1)
         //      << " us" << endl;

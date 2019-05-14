@@ -108,6 +108,7 @@ public:
             }
         }
         assert(false);
+        return EDGERANK_INFINIY;
     }
 
     bool hasEdge(NODE_T u, NODE_T v) {
@@ -126,6 +127,7 @@ public:
             }
         }
         assert(false);
+        return EDGEWEIGHT_INFINITY;
     }
 
     template<typename F>

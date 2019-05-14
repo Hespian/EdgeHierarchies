@@ -90,13 +90,7 @@ public:
 
 protected:
     void getNextRoundEdges() {
-        EDGEID_T numUpdates = 0;
         for(EDGEID_T edgeId : edgesInGraph) {
-            // if(!needsUpdate[edgeId]) {
-            //     continue;
-            // }
-            // ++numUpdates;
-            // needsUpdate[edgeId] = false;
             pair<NODE_T, NODE_T> edge = edgeIdCreator.getEdgeFromId(edgeId);
             NODE_T u = edge.first;
             NODE_T v = edge.second;

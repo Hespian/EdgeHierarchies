@@ -201,7 +201,6 @@ int main(int argc, char* argv[]) {
         EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
         // EDGEWEIGHT_T distance = query.getDistance(u, v);
         (void) distance;
-        auto now = chrono::steady_clock::now();
     }
 	end = chrono::steady_clock::now();
 

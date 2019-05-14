@@ -84,7 +84,7 @@ public:
 
             if(PQ.peek().key < newImportance) {
                 // cout << "LARGER!" << endl;
-                PQ.push({edgeId, newImportance});
+                PQ.push({(unsigned)edgeId, newImportance});
                 popped = PQ.pop();
                 edgeId = popped.id;
             }
@@ -152,14 +152,14 @@ protected:
 
 
         if(!PQ.contains_id(edgeId)) {
-            PQ.push({edgeId, importance});
+            PQ.push({(unsigned)edgeId, importance});
         } else {
             unsigned currentKey = PQ.get_key(edgeId);
             if(importance < currentKey) {
-                PQ.decrease_key({edgeId, importance});
+                PQ.decrease_key({(unsigned)edgeId, importance});
             }
             if(importance > currentKey) {
-                PQ.increase_key({edgeId, importance});
+                PQ.increase_key({(unsigned)edgeId, importance});
             }
         }
     }
