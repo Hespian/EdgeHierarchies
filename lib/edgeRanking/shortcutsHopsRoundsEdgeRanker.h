@@ -95,9 +95,23 @@ protected:
             NODE_T v = edge.second;
             assert(g.getEdgeRank(u, v) == EDGERANK_INFINIY);
             g.setEdgeRank(u, v, EDGERANK_INFINIY - 1);
-            auto shortestPathsLost = getShortestPathsLost<false>(edge.first, edge.second, g.getEdgeWeight(u, v), g, query);
+            auto shortestPathsLost = getShortestPathsLost<true>(edge.first, edge.second, g.getEdgeWeight(u, v), g, query);
             g.setEdgeRank(u, v, EDGERANK_INFINIY);
-            edgeScore[edgeId] = mvc.getMinimumVertexCoverSize(shortestPathsLost.first) + numHops[edgeId] / 10.0;
+            auto shortcutsToAdd = mvc.getMinimumVertexCover(shortestPathsLost.first);
+            edgeScore[edgeId] = shortcutsToAdd.first.size() + shortcutsToAdd.second.size();
+
+            int numHopsUV = numHops[edgeId];
+            int numHopsAdded = 0;
+            for(const auto &uPrime: shortcutsToAdd.first) {
+                auto neighborEdgeId = edgeIdCreator.getEdgeId(uPrime, u);
+                numHopsAdded += numHops[neighborEdgeId] + numHopsUV;
+            }
+            for(const auto &vPrime: shortcutsToAdd.second){
+                auto neighborEdgeId = edgeIdCreator.getEdgeId(v, vPrime);
+                numHopsAdded += numHops[neighborEdgeId] + numHopsUV;
+            }
+            edgeScore[edgeId] *= 1000;
+            edgeScore[edgeId] += (100 * numHopsAdded) / numHopsUV;
         }
 
         // std::cout << "Updated " << numUpdates << " out of " << edgesInGraph.size() << " Edges. (" << (100.0 * numUpdates) / edgesInGraph.size() << "%)" << std::endl;
@@ -106,7 +120,7 @@ protected:
             pair<NODE_T, NODE_T> edge = edgeIdCreator.getEdgeFromId(edgeId);
             NODE_T u = edge.first;
             NODE_T v = edge.second;
-            EDGEID_T edgeScoreCurrentEdge = edgeScore[edgeId];
+            int edgeScoreCurrentEdge = edgeScore[edgeId];
             bool isMinimum = true;
             g.forAllNeighborsOutWithHighRank(v, EDGERANK_INFINIY,
                                              [&](NODE_T neighbor, EDGERANK_T level, EDGEWEIGHT_T weight) {
@@ -139,7 +153,7 @@ protected:
     EdgeHierarchyQuery query;
     EdgeIdCreator edgeIdCreator;
     BipartiteMinimumVertexCover mvc;
-    vector<double> edgeScore;
+    vector<int> edgeScore;
     ArraySet<EDGEID_T> edgesInGraph;
     vector<EDGEID_T> currentRoundEdges;
     vector<int> numHops;
