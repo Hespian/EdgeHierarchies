@@ -38,7 +38,11 @@ struct DijkstraRankRunningtime {
     unsigned rank;
     unsigned distance;
     int timeEH;
+    int verticesSettledEH;
+    int edgesRelaxedEH;
     int timeCH;
+    int verticesSettledCH;
+    int edgesRelaxedCH;
 };
 
 
@@ -74,7 +78,7 @@ std::vector<DijkstraRankRunningtime> GenerateDijkstraRankQueries(unsigned numSou
             if(n == (1u << r)){
 
                 if(r > 5){
-                    result.push_back({source_node, x.node, r, x.distance, -1, -1});
+                    result.push_back({source_node, x.node, r, x.distance, -1, -1, -1, -1});
                 }
 
                 ++r;
@@ -181,7 +185,7 @@ int main(int argc, char* argv[]) {
     // EdgeHierarchyConstruction<ShortcutCountingSortingRoundsEdgeRanker> construction(g, query);
 
     start = chrono::high_resolution_clock::now();
-    construction.run();
+    // construction.run();
     g.sortEdges();
     EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
     EdgeHierarchyQueryOnly newQuery = EdgeHierarchyQueryOnly(newG);
@@ -261,60 +265,53 @@ int main(int argc, char* argv[]) {
     srand (seed);
 
     // query.resetCounters();
-    newQuery.resetCounters();
 
     for(auto &generatedQuery: queries) {
         NODE_T u = generatedQuery.source;
         NODE_T v = generatedQuery.target;
 
+        newQuery.resetCounters();
         start = chrono::high_resolution_clock::now();
         EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
         // EDGEWEIGHT_T distance = query.getDistance(u, v);
         (void) distance;
         end = chrono::high_resolution_clock::now();
         generatedQuery.timeEH = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+        generatedQuery.verticesSettledEH = newQuery.numVerticesSettled;
+        generatedQuery.edgesRelaxedEH = newQuery.numEdgesRelaxed;
     }
-
-	// cout << "Average number of vertices settled (EH): "
-    //      << query.numVerticesSettled/queries.size()
-    //      << endl;
-	// cout << "Average number of edges relaxed (EH): "
-    //      << query.numEdgesRelaxed/queries.size()
-    //      << endl;
-    cout << "Average number of vertices settled (EH): "
-         << newQuery.numVerticesSettled/queries.size()
-         << endl;
-    cout << "Average number of edges relaxed (EH): "
-         << newQuery.numEdgesRelaxed/queries.size()
-         << endl;
-
-
-
 
     srand (seed);
 
-    chQuery.resetCounters();
     for(auto &generatedQuery: queries) {
         NODE_T u = generatedQuery.source;
         NODE_T v = generatedQuery.target;
 
+        chQuery.resetCounters();
         start = chrono::high_resolution_clock::now();
         chQuery.reset().add_source(u).add_target(v).run();
         auto chDistance = chQuery.get_distance();
         (void) chDistance;
         end = chrono::high_resolution_clock::now();
         generatedQuery.timeCH = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+        generatedQuery.verticesSettledCH = chQuery.getNumVerticesSettled();
+        generatedQuery.edgesRelaxedCH = chQuery.getNumEdgesRelaxed();
     }
 
-    chQuery.printCounters(queries.size());
 
 
+    std::cout << "Format: rank time vertices edges" << std::endl;
     for(auto &generatedQuery: queries) {
         unsigned rank = generatedQuery.rank;
         int timeEH = generatedQuery.timeEH;
+        int numVerticesSettledEH = generatedQuery.verticesSettledEH;
+        int numEdgesRelaxedEH = generatedQuery.edgesRelaxedEH;
         int timeCH = generatedQuery.timeCH;
+        int numVerticesSettledCH = generatedQuery.verticesSettledCH;
+        int numEdgesRelaxedCH = generatedQuery.verticesSettledCH;
 
-        std::cout << "timing: " << rank << " " << timeEH << " " << timeCH << std::endl;
+        std::cout << "result EH: " << rank << " " << timeEH << " " << numVerticesSettledEH << " " << numEdgesRelaxedEH << std::endl;
+        std::cout << "result CH: " << rank << " " << timeCH << " " << numVerticesSettledCH << " " << numEdgesRelaxedCH << std::endl;
     }
 
     return numMistakes;
