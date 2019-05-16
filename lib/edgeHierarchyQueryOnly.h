@@ -19,6 +19,7 @@
 #include "edgeHierarchyGraphQueryOnly.h"
 
 #define LOG_VERTICES_SETTLED false
+// #define USE_STALLING
 
 class EdgeHierarchyQueryOnly {
 public:
@@ -29,14 +30,21 @@ public:
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledBackward;
 
     EdgeHierarchyQueryOnly(EdgeHierarchyGraphQueryOnly &g) : g(g),
-                                                PQForward(g.getNumberOfNodes()),
-                                                PQBackward(g.getNumberOfNodes()),
-                                                wasPushedForward(g.getNumberOfNodes()),
-                                                wasPushedBackward(g.getNumberOfNodes()),
-                                                tentativeDistanceForward(g.getNumberOfNodes()),
-                                                tentativeDistanceBackward(g.getNumberOfNodes()),
-                                                rankForward(g.getNumberOfNodes()),
-                                                rankBackward(g.getNumberOfNodes()) {
+                                                             PQForward(g.getNumberOfNodes()),
+                                                             PQBackward(g.getNumberOfNodes()),
+                                                             wasPushedForward(g.getNumberOfNodes()),
+                                                             wasPushedBackward(g.getNumberOfNodes()),
+                                                             tentativeDistanceForward(g.getNumberOfNodes()),
+                                                             tentativeDistanceBackward(g.getNumberOfNodes()),
+                                                             rankForward(g.getNumberOfNodes()),
+                                                             rankBackward(g.getNumberOfNodes())
+#ifdef USE_STALLING
+                                                           ,actualDistanceForward(g.getNumberOfNodes()),
+                                                             actualDistanceBackward(g.getNumberOfNodes()),
+                                                             actualDistanceSetForward(g.getNumberOfNodes()),
+                                                             actualDistanceSetBackward(g.getNumberOfNodes())
+#endif
+    {
         numVerticesSettled = 0;
         numEdgesRelaxed = 0;
     };
@@ -51,6 +59,10 @@ public:
         NODE_T t = g.getInternalNodeNumber(externalT);
         wasPushedForward.reset_all();
         wasPushedBackward.reset_all();
+#ifdef USE_STALLING
+        actualDistanceSetForward.reset_all();
+        actualDistanceSetBackward.reset_all();
+#endif
 
         popCount = 0;
 
@@ -122,7 +134,7 @@ public:
 protected:
 
     template<bool forward>
-    bool canStallAtNode(NODE_T v) {
+    bool canStallAtNodeOld(NODE_T v) {
         RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
 
@@ -149,6 +161,20 @@ protected:
         return result;
     }
 
+#ifdef USE_STALLING
+    template<bool forward>
+    bool canStallAtNode(NODE_T v) {
+        vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
+        vector<EDGEWEIGHT_T> &actualDistanceCurrent = forward ? actualDistanceForward : actualDistanceBackward;
+        RoutingKit::TimestampFlags &actualDistanceSetCurrent = forward ? actualDistanceSetForward : actualDistanceSetBackward;
+        if(actualDistanceSetCurrent.is_set(v)) {
+            return actualDistanceCurrent[v] < tentativeDistanceCurrent[v];
+        } else {
+            return false;
+        }
+    }
+#endif
+
     template<bool forward>
     void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength) {
         RoutingKit::MinIDQueue &PQCurrent = forward ? PQForward : PQBackward;
@@ -157,17 +183,24 @@ protected:
         vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
         vector<EDGEWEIGHT_T> &tentativeDistanceOther = forward ? tentativeDistanceBackward : tentativeDistanceForward;
         vector<EDGERANK_T> &rankCurrent = forward ? rankForward : rankBackward;
+#ifdef USE_STALLING
+        vector<EDGEWEIGHT_T> &actualDistanceCurrent = forward ? actualDistanceForward : actualDistanceBackward;
+        RoutingKit::TimestampFlags &actualDistanceSetCurrent = forward ? actualDistanceSetForward : actualDistanceSetBackward;
+#endif
 
         auto popped = PQCurrent.pop();
-        numVerticesSettled++;
 
         NODE_T u = popped.id;
         EDGERANK_T distanceU = popped.key;
         assert(distanceU == tentativeDistanceCurrent[u]);
 
-        // if(canStallAtNode<forward>(u)) {
-        //     return;
-        // }
+        numVerticesSettled++;
+
+#ifdef USE_STALLING
+        if(canStallAtNode<forward>(u)) {
+            return;
+        }
+#endif
 
         if(LOG_VERTICES_SETTLED) {
             if(forward){
@@ -189,9 +222,16 @@ protected:
             EDGEWEIGHT_T distanceV = distanceU + weight;
             if(wasPushedCurrent.is_set(v)) {
                 if(distanceV < tentativeDistanceCurrent[v]) {
-                    PQCurrent.decrease_key({v, distanceV});
-                    tentativeDistanceCurrent[v] = distanceV;
-                    rankCurrent[v] = rank;
+#ifdef USE_STALLING
+                    if(!actualDistanceSetCurrent.is_set(v) || distanceV < actualDistanceCurrent[v]) {
+#endif
+                        PQCurrent.decrease_key({v, distanceV});
+                        tentativeDistanceCurrent[v] = distanceV;
+                        rankCurrent[v] = rank;
+#ifdef USE_STALLING
+                    }
+#endif
+
                 }
                else if(distanceV == tentativeDistanceCurrent[v] && rankCurrent[v] < rank) {
                    rankCurrent[v] = rank;
@@ -205,11 +245,56 @@ protected:
             }
         };
 
+#ifdef USE_STALLING
+        auto stallFunc = [&] (NODE_T v, EDGERANK_T rank, EDGEWEIGHT_T weight) {
+            ++numEdgesRelaxed;
+            EDGEWEIGHT_T distanceV = distanceU + weight;
+            if(wasPushedCurrent.is_set(v)) {
+                if(tentativeDistanceCurrent[v] > distanceV) {
+                    if(actualDistanceSetCurrent.is_set(v)) {
+                        if(actualDistanceCurrent[v] > distanceV) {
+                            actualDistanceCurrent[v] = distanceV;
+                        }
+                    } else {
+                        actualDistanceCurrent[v] = distanceV;
+                        actualDistanceSetCurrent.set(v);
+                    }
+                }
+            } else {
+                if(actualDistanceSetCurrent.is_set(v)) {
+                    if(actualDistanceCurrent[v] > distanceV) {
+                        actualDistanceCurrent[v] = distanceV;
+                    }
+                } else {
+                    actualDistanceCurrent[v] = distanceV;
+                    actualDistanceSetCurrent.set(v);
+                }
+            }
+        };
+
+        EDGERANK_T rankU = rankCurrent[u];
+        auto combinedFunc = [&] (NODE_T v, EDGERANK_T rank, EDGEWEIGHT_T weight) {
+            if(rank >= rankU) {
+                relaxFunc(v, rank, weight);
+            } else {
+                stallFunc(v, rank, weight);
+            }
+        };
+#endif
+
         if(forward) {
+#ifdef USE_STALLING
+            g.forAllNeighborsOutWithRank(u, combinedFunc);
+#else
             g.forAllNeighborsOutWithHighRank(u, rankCurrent[u], relaxFunc);
+#endif
         }
         else {
+#ifdef USE_STALLING
+            g.forAllNeighborsInWithRank(u, combinedFunc);
+#else
             g.forAllNeighborsInWithHighRank(u, rankCurrent[u], relaxFunc);
+#endif
         }
     }
 
@@ -222,4 +307,10 @@ protected:
     vector<EDGEWEIGHT_T> tentativeDistanceBackward;
     vector<EDGERANK_T> rankForward;
     vector<EDGERANK_T> rankBackward;
+#ifdef USE_STALLING
+    vector<EDGEWEIGHT_T> actualDistanceForward;
+    vector<EDGEWEIGHT_T> actualDistanceBackward;
+    RoutingKit::TimestampFlags actualDistanceSetForward;
+    RoutingKit::TimestampFlags actualDistanceSetBackward;
+#endif
 };
