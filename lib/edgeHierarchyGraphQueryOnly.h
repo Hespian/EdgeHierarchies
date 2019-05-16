@@ -111,6 +111,27 @@ public:
         }
     }
 
+    template<typename F>
+    void forAllNeighborsInWithRank(NODE_T v, F &&callback) {
+        for(size_t i = inBegin[v]; i < inBegin[v + 1]; ++i) {
+#if GROUP_EDGES
+            callback(inEdges[i].neighbor, inEdges[i].rank, inEdges[i].weight);
+#else
+            callback(inNeighbor[i], inRank[i], inWeight[i]);
+#endif
+        }
+    }
+
+    template<typename F>
+    void forAllNeighborsOutWithRank(NODE_T v, F &&callback) {
+        for(size_t i = outBegin[v]; i < outBegin[v + 1]; ++i) {
+#if GROUP_EDGES
+            callback(outEdges[i].neighbor, outEdges[i].rank, outEdges[i].weight);
+#else
+            callback(outNeighbor[i], outRank[i], outWeight[i]);
+#endif
+        }
+    }
 
     template<typename F>
     void forAllNeighborsInWithHighRank(NODE_T v, EDGERANK_T rankThreshold, F &&callback) {
