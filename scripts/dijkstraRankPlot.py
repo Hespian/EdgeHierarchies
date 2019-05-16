@@ -50,7 +50,6 @@ with open(inFileName) as f:
             verticesCH[rank - rankOffset].append(vertices)
 
 
-ticks = [r"$2^{" + str(i + rankOffset) + "}$" for i in range(len(timesEH))]
 def set_box_color(bp, color):
     plt.setp(bp['boxes'], color=color)
     plt.setp(bp['whiskers'], color=color)
@@ -60,10 +59,12 @@ def set_box_color(bp, color):
 
 def plot(dataEH, dataCH, title, ylabel):
 
+    ticks = [r"$2^{" + str(i + rankOffset) + "}$" for i in range(len(dataEH))]
+
     plt.figure()
 
-    bpl = plt.boxplot(dataEH, positions=np.array(range(len(timesEH)))*2.0-0.4, sym='', widths=0.6)
-    bpr = plt.boxplot(dataCH, positions=np.array(range(len(timesCH)))*2.0+0.4, sym='', widths=0.6)
+    bpl = plt.boxplot(dataEH, positions=np.array(range(len(dataEH)))*2.0-0.4, sym='', widths=0.6)
+    bpr = plt.boxplot(dataCH, positions=np.array(range(len(dataCH)))*2.0+0.4, sym='', widths=0.6)
     set_box_color(bpl, '#D7191C') # colors are from http://colorbrewer2.org/
     set_box_color(bpr, '#2C7BB6')
 
