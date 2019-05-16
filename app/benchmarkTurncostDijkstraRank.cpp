@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
     // EdgeHierarchyConstruction<ShortcutCountingSortingRoundsEdgeRanker> construction(g, query);
 
     start = chrono::high_resolution_clock::now();
-    // construction.run();
+    construction.run();
     g.sortEdges();
     EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
     EdgeHierarchyQueryOnly newQuery = EdgeHierarchyQueryOnly(newG);
