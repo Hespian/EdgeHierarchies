@@ -29,7 +29,7 @@ public:
         std::cout << "Shortcut hops rounds edge ranker" << std::endl;
         g.forAllNodes( [&] (NODE_T u) {
                 g.forAllNeighborsOut(u, [&] (NODE_T v, EDGEWEIGHT_T weight) {
-                        addEdge(u, v);
+                        addEdgeInitial(u, v);
                     });
             });
     }
@@ -79,7 +79,6 @@ public:
         currentRoundEdges.pop_back();
         edgesInGraph.remove(nextEdgeId);
         auto edge = edgeIdCreator.getEdgeFromId(nextEdgeId);
-        updateEdge(edge.first, edge.second);
         lastEdgeRemovedId = nextEdgeId;
         return edge;
     }
