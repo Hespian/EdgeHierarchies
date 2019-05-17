@@ -308,7 +308,7 @@ int main(int argc, char* argv[]) {
         int numEdgesRelaxedEH = generatedQuery.edgesRelaxedEH;
         int timeCH = generatedQuery.timeCH;
         int numVerticesSettledCH = generatedQuery.verticesSettledCH;
-        int numEdgesRelaxedCH = generatedQuery.verticesSettledCH;
+        int numEdgesRelaxedCH = generatedQuery.edgesRelaxedCH;
 
         std::cout << "result EH: " << rank << " " << timeEH << " " << numVerticesSettledEH << " " << numEdgesRelaxedEH << std::endl;
         std::cout << "result CH: " << rank << " " << timeCH << " " << numVerticesSettledCH << " " << numEdgesRelaxedCH << std::endl;
