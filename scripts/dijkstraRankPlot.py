@@ -77,7 +77,8 @@ def plot(dataEH, dataCH, title, ylabel):
     plt.ylabel(ylabel)
     plt.xlabel(r"Dijkstra Rank")
     plt.title(title)
-    plt.show()
+    # plt.show()
+    plt.savefig(inFileName + title.split()[0] + ".pdf")
     plt.clf()
 
 plot(timesEH, timesCH, "Time", "time [μs]")
