@@ -6,15 +6,22 @@
 # All rights reserved.
 ################################################################################
 
+add_custom_target(
+   RoutingKit
+   COMMAND make
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/RoutingKit/
+)
 
 add_executable(benchmark benchmark.cpp)
 target_compile_options(benchmark PRIVATE -Wall)
 target_compile_options(benchmark PRIVATE -g)
 target_link_libraries(benchmark tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)
+add_dependencies(benchmark RoutingKit)
 
 add_executable(calculateMinimalSearchSpace calculateMinimalSearchSpace.cpp)
 target_compile_options(calculateMinimalSearchSpace PRIVATE -Wall)
 target_compile_options(calculateMinimalSearchSpace PRIVATE -g)
 target_link_libraries(calculateMinimalSearchSpace tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)
+add_dependencies(calculateMinimalSearchSpace RoutingKit)
 
 
