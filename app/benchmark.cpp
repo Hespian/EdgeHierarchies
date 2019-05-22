@@ -11,10 +11,14 @@
 #include <chrono>
 #include <unistd.h>
 #include <cstdlib>
+#include <random>
 
 #include <tlx/cmdline_parser.hpp>
 
 #include <routingkit/contraction_hierarchy.h>
+#include <routingkit/vector_io.h>
+#include <routingkit/dijkstra.h>
+#include <routingkit/inverse_vector.h>
 
 #include "definitions.h"
 #include "edgeHierarchyGraph.h"
@@ -27,23 +31,99 @@
 #include "edgeRanking/shortcutCountingSortingRoundsEdgeRanker.h"
 #include "edgeRanking/levelShortcutsHopsEdgeRanker.h"
 
-
 RoutingKit::ContractionHierarchy getCHFromGraph(EdgeHierarchyGraph &g) {
     std::vector<unsigned> tails, heads, weights;
 
     g.forAllNodes([&] (NODE_T tail) {
-       g.forAllNeighborsOut(tail, [&] (NODE_T head, EDGEWEIGHT_T weight) {
-           tails.push_back(tail);
-           heads.push_back(head);
-           weights.push_back(weight);
-       });
-    });
+            g.forAllNeighborsOut(tail, [&] (NODE_T head, EDGEWEIGHT_T weight) {
+                    tails.push_back(tail);
+                    heads.push_back(head);
+                    weights.push_back(weight);
+                });
+        });
 
     return RoutingKit::ContractionHierarchy::build(
-            g.getNumberOfNodes(),
-            tails, heads,
-            weights
-    );
+                                                   g.getNumberOfNodes(),
+                                                   tails, heads,
+                                                   weights
+                                                   );
+}
+
+#define INVALID_QUERY_DATA std::numeric_limits<unsigned>::max()
+
+struct DijkstraRankRunningtime {
+    unsigned source;
+    unsigned target;
+    unsigned rank;
+    unsigned distance;
+    int timeEH;
+    int verticesSettledEH;
+    int edgesRelaxedEH;
+    int timeCH;
+    int verticesSettledCH;
+    int edgesRelaxedCH;
+};
+
+
+std::vector<DijkstraRankRunningtime> GenerateDijkstraRankQueries(unsigned numSourceNodes, int seed, EdgeHierarchyGraph &g) {
+    std::default_random_engine gen(seed);
+    std::uniform_int_distribution<int> dist(0, g.getNumberOfNodes()-1);
+
+    std::vector<unsigned> tails, heads, weights, first_out;
+
+    g.forAllNodes([&] (NODE_T tail) {
+            first_out.push_back(tails.size());
+            g.forAllNeighborsOut(tail, [&] (NODE_T head, EDGEWEIGHT_T weight) {
+                    tails.push_back(tail);
+                    heads.push_back(head);
+                    weights.push_back(weight);
+                });
+        });
+    RoutingKit::Dijkstra dij(first_out, tails, heads);
+
+    std::vector<DijkstraRankRunningtime> result;
+
+    for(unsigned i=0; i<numSourceNodes; ++i){
+
+        unsigned source_node = dist(gen);
+        unsigned r = 0;
+        unsigned n = 0;
+
+        dij.reset().add_source(source_node);
+
+        while(!dij.is_finished()){
+            auto x = dij.settle(RoutingKit::ScalarGetWeight(weights));
+            ++n;
+            if(n == (1u << r)){
+
+                if(r > 5){
+                    result.push_back({source_node, x.node, r, x.distance, -1, -1, -1, -1});
+                }
+
+                ++r;
+            }
+        }
+		}
+
+    return result;
+}
+
+std::vector<DijkstraRankRunningtime> GenerateRandomQueries(unsigned numQueries, int seed, EdgeHierarchyGraph &g) {
+
+    std::default_random_engine gen(seed);
+    std::uniform_int_distribution<int> dist(0, g.getNumberOfNodes()-1);
+
+    std::vector<DijkstraRankRunningtime> result;
+
+    for(unsigned i=0; i<numQueries; ++i){
+
+        unsigned source_node = dist(gen);
+        unsigned target_node = dist(gen);
+
+        result.push_back({source_node, target_node, INVALID_QUERY_DATA, INVALID_QUERY_DATA, -1, -1, -1, -1});
+    }
+
+    return result;
 }
 
 int main(int argc, char* argv[]) {
@@ -64,6 +144,14 @@ int main(int argc, char* argv[]) {
     cp.add_param_string("filename", filename,
                         "Filename of the graph to benchmark on");
 
+    bool addTurnCosts = false;
+    cp.add_bool ('t', "turnCosts", addTurnCosts,
+                 "If this flag is set, turn costs are added to the input graph.");
+
+    bool dijkstraRank = false;
+    cp.add_bool ('d', "dijkstraRank", dijkstraRank,
+                 "If this flag is set, queries are generated for dijkstra ranks of powers of two with numQueries source vertices.");
+
     // process command line
     if (!cp.process(argc, argv))
         return -1; // some error occurred and help was always written to user.
@@ -80,6 +168,18 @@ int main(int argc, char* argv[]) {
 
     cout << "Input graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
+    if(addTurnCosts){
+        start = chrono::steady_clock::now();
+        g = g.getTurnCostGraph();
+        end = chrono::steady_clock::now();
+
+        cout << "Adding turn costs took "
+             << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+             << " ms" << endl;
+
+        cout << "Turn cost graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+    }
+
     start = chrono::steady_clock::now();
     auto ch = getCHFromGraph(g);
     RoutingKit::ContractionHierarchyQuery chQuery(ch);
@@ -94,62 +194,62 @@ int main(int argc, char* argv[]) {
 
 
 
-    EdgeHierarchyQuery query(g);
+    {
+        EdgeHierarchyQuery query(g);
 
-    EdgeHierarchyGraph originalGraph(g);
-    EdgeHierarchyQuery originalGraphQuery(originalGraph);
+        EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
 
-    // EdgeHierarchyConstruction<LevelShortcutsHopsEdgeRanker> construction(g, query);
-    EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
-    // EdgeHierarchyConstruction<ShortcutCountingSortingRoundsEdgeRanker> construction(g, query);
+        start = chrono::steady_clock::now();
+        construction.run();
+        end = chrono::steady_clock::now();
 
-    start = chrono::steady_clock::now();
-    construction.run();
+        cout << "EH Construction took "
+             << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+             << " ms" << endl;
+
+        cout << "Distance in Query graph was equal to removed path " << numEquals << " times" <<endl;
+    }
     g.sortEdges();
-    // EdgeHierarchyGraph newG = g;
-    // EdgeHierarchyQuery newQuery = query;
     EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
     EdgeHierarchyQueryOnly newQuery = EdgeHierarchyQueryOnly(newG);
     newG.makeConsecutive();
-	end = chrono::steady_clock::now();
-
-	cout << "EH Construction took "
-         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
-         << " ms" << endl;
 
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
 
     cout << "DFS ordered edge hierarchy graph has " << newG.getNumberOfNodes() << " vertices and " << newG.getNumberOfEdges() << " edges" << endl;
 
-    cout << "Distance in Query graph was equal to removed path " << numEquals << " times" <<endl;
+    std::vector<DijkstraRankRunningtime> queries;
+    if(dijkstraRank) {
+        queries = GenerateDijkstraRankQueries(numQueries, seed, g);
+    } else {
+        queries = GenerateRandomQueries(numQueries, seed, g);
+    }
 
-    srand (seed);
     int numMistakes = 0;
     int numCorrect = 0;
-    for(unsigned i = 0; i < numQueries; ++i) {
-        NODE_T u = rand() % g.getNumberOfNodes();
-        NODE_T v = rand() % g.getNumberOfNodes();
+    for(auto &generatedQuery: queries) {
+        NODE_T u = generatedQuery.source;
+        NODE_T v = generatedQuery.target;
 
-        EDGEWEIGHT_T distance = query.getDistance(u, v);
-
-//        EDGEWEIGHT_T originalGraphDistance = originalGraphQuery.getDistance(u, v);
+        EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
 
         chQuery.reset().add_source(u).add_target(v).run();
         auto chDistance = chQuery.get_distance();
 
-//        if(distance != originalGraphDistance) {
-//
-//            cout << "Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << originalGraphDistance << ")" << endl;
-//            numMistakes++;
-//        } else {
-//            numCorrect++;
-//        }
+        if(generatedQuery.distance == INVALID_QUERY_DATA) {
+            generatedQuery.distance = chDistance;
+        }
 
-        if(chDistance != distance) {
-            cout << "Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << chDistance << ")" << endl;
+        if(generatedQuery.distance != distance) {
+            cout << "EH: Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << generatedQuery.distance << ")" << endl;
             numMistakes++;
         } else {
             numCorrect++;
+        }
+
+        if(generatedQuery.distance != chDistance) {
+            cout << "CH: Wrong distance for " << u << " and " << v << ": " << chDistance << " (should be " << generatedQuery.distance << ")" << endl;
+        } else {
         }
     }
 
@@ -160,70 +260,90 @@ int main(int argc, char* argv[]) {
     cout << "Done checking. Measuring time..." << endl;
 
 
-    srand (seed);
 
-    // query.resetCounters();
     newQuery.resetCounters();
-
     start = chrono::steady_clock::now();
-    for(unsigned i = 0; i < numQueries; ++i) {
-        NODE_T u = rand() % g.getNumberOfNodes();
-        NODE_T v = rand() % g.getNumberOfNodes();
+    for(auto &generatedQuery: queries) {
+        NODE_T u = generatedQuery.source;
+        NODE_T v = generatedQuery.target;
 
+        if(dijkstraRank) {
+            newQuery.resetCounters();
+        }
+        auto queryStart = chrono::high_resolution_clock::now();
         EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
         // EDGEWEIGHT_T distance = query.getDistance(u, v);
         (void) distance;
-        // auto now = chrono::steady_clock::now();
-        // cout << "Average query time (EH): "
-        //      << chrono::duration_cast<chrono::microseconds>(now - start).count() / (i + 1)
-        //      << " us" << endl;
-        // cout << "Average number of vertices settled (EH): "
-        //      << newQuery.numVerticesSettled/numQueries
-        //      << endl;
-        // cout << "Average number of edges relaxed (EH): "
-        //      << newQuery.numEdgesRelaxed/numQueries
-        //      << endl;
+        auto queryEnd = chrono::high_resolution_clock::now();
+        if(dijkstraRank) {
+            generatedQuery.timeEH = chrono::duration_cast<chrono::nanoseconds>(queryEnd - queryStart).count();
+            generatedQuery.verticesSettledEH = newQuery.numVerticesSettled;
+            generatedQuery.edgesRelaxedEH = newQuery.numEdgesRelaxed;
+        }
     }
 	end = chrono::steady_clock::now();
 
-	cout << "Average query time (EH): "
-         << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
-         << " us" << endl;
-	// cout << "Average number of vertices settled (EH): "
-    //      << query.numVerticesSettled/numQueries
-    //      << endl;
-	// cout << "Average number of edges relaxed (EH): "
-    //      << query.numEdgesRelaxed/numQueries
-    //      << endl;
-    cout << "Average number of vertices settled (EH): "
-         << newQuery.numVerticesSettled/numQueries
-         << endl;
-    cout << "Average number of edges relaxed (EH): "
-         << newQuery.numEdgesRelaxed/numQueries
-         << endl;
+    if(!dijkstraRank) {
+        cout << "Average query time (EH): "
+             << chrono::duration_cast<chrono::microseconds>(end - start).count() / queries.size()
+             << " us" << endl;
+        cout << "Average number of vertices settled (EH): "
+             << newQuery.numVerticesSettled/queries.size()
+             << endl;
+        cout << "Average number of edges relaxed (EH): "
+             << newQuery.numEdgesRelaxed/queries.size()
+             << endl;
+    }
 
 
 
 
 
-    srand (seed);
 
     chQuery.resetCounters();
     start = chrono::steady_clock::now();
-    for(unsigned i = 0; i < numQueries; ++i) {
-        NODE_T u = rand() % g.getNumberOfNodes();
-        NODE_T v = rand() % g.getNumberOfNodes();
+    for(auto &generatedQuery: queries) {
+        NODE_T u = generatedQuery.source;
+        NODE_T v = generatedQuery.target;
 
+        if(dijkstraRank) {
+            chQuery.resetCounters();
+        }
+        auto queryStart = chrono::high_resolution_clock::now();
         chQuery.reset().add_source(u).add_target(v).run();
         auto chDistance = chQuery.get_distance();
         (void) chDistance;
+        auto queryEnd = chrono::high_resolution_clock::now();
+        if(dijkstraRank) {
+            generatedQuery.timeCH = chrono::duration_cast<chrono::nanoseconds>(queryEnd - queryStart).count();
+            generatedQuery.verticesSettledCH = chQuery.getNumVerticesSettled();
+            generatedQuery.edgesRelaxedCH = chQuery.getNumEdgesRelaxed();
+        }
     }
     end = chrono::steady_clock::now();
 
-    cout << "Average query time (CH): "
-         << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
-         << " us" << endl;
-    chQuery.printCounters(numQueries);
+    if(!dijkstraRank) {
+        cout << "Average query time (CH): "
+             << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
+             << " us" << endl;
+        chQuery.printCounters(numQueries);
+    }
+
+    if(dijkstraRank) {
+        std::cout << "Format: rank time vertices edges" << std::endl;
+        for(auto &generatedQuery: queries) {
+            unsigned rank = generatedQuery.rank;
+            int timeEH = generatedQuery.timeEH;
+            int numVerticesSettledEH = generatedQuery.verticesSettledEH;
+            int numEdgesRelaxedEH = generatedQuery.edgesRelaxedEH;
+            int timeCH = generatedQuery.timeCH;
+            int numVerticesSettledCH = generatedQuery.verticesSettledCH;
+            int numEdgesRelaxedCH = generatedQuery.edgesRelaxedCH;
+
+            std::cout << "result EH: " << rank << " " << timeEH << " " << numVerticesSettledEH << " " << numEdgesRelaxedEH << std::endl;
+            std::cout << "result CH: " << rank << " " << timeCH << " " << numVerticesSettledCH << " " << numEdgesRelaxedCH << std::endl;
+        }
+    }
 
     return numMistakes;
 }

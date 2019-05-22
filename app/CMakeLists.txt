@@ -17,12 +17,4 @@ target_compile_options(calculateMinimalSearchSpace PRIVATE -Wall)
 target_compile_options(calculateMinimalSearchSpace PRIVATE -g)
 target_link_libraries(calculateMinimalSearchSpace tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)
 
-add_executable(benchmarkTurncosts benchmarkTurncosts.cpp)
-target_compile_options(benchmarkTurncosts PRIVATE -Wall)
-target_compile_options(benchmarkTurncosts PRIVATE -g)
-target_link_libraries(benchmarkTurncosts tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)
 
-add_executable(benchmarkTurncostDijkstraRank benchmarkTurncostDijkstraRank.cpp)
-target_compile_options(benchmarkTurncostDijkstraRank PRIVATE -Wall)
-target_compile_options(benchmarkTurncostDijkstraRank PRIVATE -g)
-target_link_libraries(benchmarkTurncostDijkstraRank tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)
