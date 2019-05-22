@@ -1629,6 +1629,10 @@ ContractionHierarchyQuery&ContractionHierarchyQuery::add_target(unsigned externa
         return numEdgesRelaxed;
     }
 
+    int ContractionHierarchyQuery::getNumEdgesLookedAtForStalling() {
+        return numEdgesLookedAtForStalling;
+    }
+
     std::vector<std::pair<unsigned, unsigned>> ContractionHierarchyQuery::getVerticesSettledForward() {return verticesSettledForward; }
     std::vector<std::pair<unsigned, unsigned>> ContractionHierarchyQuery::getVerticesSettledBackward() {return verticesSettledBackward;}
 

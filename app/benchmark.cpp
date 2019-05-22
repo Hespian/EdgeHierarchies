@@ -328,13 +328,12 @@ int main(int argc, char* argv[]) {
         }
         auto queryStart = chrono::high_resolution_clock::now();
         EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
-        // EDGEWEIGHT_T distance = query.getDistance(u, v);
         (void) distance;
         auto queryEnd = chrono::high_resolution_clock::now();
         if(dijkstraRank) {
             generatedQuery.timeEH = chrono::duration_cast<chrono::nanoseconds>(queryEnd - queryStart).count();
             generatedQuery.verticesSettledEH = newQuery.numVerticesSettled;
-            generatedQuery.edgesRelaxedEH = newQuery.numEdgesRelaxed;
+            generatedQuery.edgesRelaxedEH = newQuery.numEdgesRelaxed + newQuery.numEdgesLookedAtForStalling;
         }
     }
 	auto end = chrono::steady_clock::now();
@@ -371,7 +370,7 @@ int main(int argc, char* argv[]) {
         if(dijkstraRank) {
             generatedQuery.timeCH = chrono::duration_cast<chrono::nanoseconds>(queryEnd - queryStart).count();
             generatedQuery.verticesSettledCH = chQuery.getNumVerticesSettled();
-            generatedQuery.edgesRelaxedCH = chQuery.getNumEdgesRelaxed();
+            generatedQuery.edgesRelaxedCH = chQuery.getNumEdgesRelaxed() + chQuery.getNumEdgesLookedAtForStalling();
         }
     }
     end = chrono::steady_clock::now();

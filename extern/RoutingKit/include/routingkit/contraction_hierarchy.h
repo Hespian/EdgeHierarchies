@@ -106,6 +106,7 @@ public:
     void printCounters(int numQueries);
     int getNumVerticesSettled();
     int getNumEdgesRelaxed();
+    int getNumEdgesLookedAtForStalling();
     std::vector<std::pair<unsigned, unsigned>> getVerticesSettledForward();
     std::vector<std::pair<unsigned, unsigned>> getVerticesSettledBackward();
 
