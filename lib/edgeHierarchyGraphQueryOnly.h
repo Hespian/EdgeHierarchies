@@ -134,40 +134,44 @@ public:
     }
 
     template<typename F>
-    void forAllNeighborsInWithHighRank(NODE_T v, EDGERANK_T rankThreshold, F &&callback) {
-        for(size_t i = inBegin[v]; i < inBegin[v + 1]; ++i) {
+    void forAllNeighborsInWithHighRank(const NODE_T v, const EDGERANK_T _rankThreshold, F &&callback) {
+        const EDGERANK_T rankThreshold = _rankThreshold;
+        size_t i = inBegin[v];
+        const size_t end = inBegin[v + 1];
+        while(i < end &&
 #if GROUP_EDGES
-            if(inEdges[i].rank >= rankThreshold) {
-                callback(inEdges[i].neighbor, inEdges[i].rank, inEdges[i].weight);
-            } else {
-                return;
-            }
+              inEdges[i].rank >= rankThreshold
 #else
-            if(inRank[i] >= rankThreshold) {
-                callback(inNeighbor[i], inRank[i], inWeight[i]);
-            } else {
-                return;
-            }
+              inRank[i] >= rankThreshold
 #endif
+              ){
+#if GROUP_EDGES
+            callback(inEdges[i].neighbor, inEdges[i].rank, inEdges[i].weight);
+#else
+            callback(inNeighbor[i], inRank[i], inWeight[i]);
+#endif
+            ++i;
         }
     }
 
     template<typename F>
-    void forAllNeighborsOutWithHighRank(NODE_T v, EDGERANK_T rankThreshold, F &&callback) {
-        for(size_t i = outBegin[v]; i < outBegin[v + 1]; ++i) {
+    void forAllNeighborsOutWithHighRank(const NODE_T v, const EDGERANK_T _rankThreshold, F &&callback) {
+        const EDGERANK_T rankThreshold = _rankThreshold;
+        size_t i = outBegin[v];
+        const size_t end = outBegin[v + 1];
+        while(i < end &&
 #if GROUP_EDGES
-            if(outEdges[i].rank >= rankThreshold) {
-                callback(outEdges[i].neighbor, outEdges[i].rank, outEdges[i].weight);
-            } else {
-                return;
-            }
+              outEdges[i].rank >= rankThreshold
 #else
-            if(outRank[i] >= rankThreshold) {
-                callback(outNeighbor[i], outRank[i], outWeight[i]);
-            } else {
-                return;
-            }
+              outRank[i] >= rankThreshold
 #endif
+              ){
+#if GROUP_EDGES
+            callback(outEdges[i].neighbor, outEdges[i].rank, outEdges[i].weight);
+#else
+            callback(outNeighbor[i], outRank[i], outWeight[i]);
+#endif
+            ++i;
         }
     }
 

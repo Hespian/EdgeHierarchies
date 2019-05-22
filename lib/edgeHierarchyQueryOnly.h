@@ -217,9 +217,9 @@ protected:
 			}
 		}
 
-        auto relaxFunc = [&] (NODE_T v, EDGERANK_T rank, EDGEWEIGHT_T weight) {
+        auto relaxFunc = [&] (const NODE_T v, const EDGERANK_T rank, const EDGEWEIGHT_T weight) {
             ++numEdgesRelaxed;
-            EDGEWEIGHT_T distanceV = distanceU + weight;
+            const EDGEWEIGHT_T distanceV = distanceU + weight;
             if(wasPushedCurrent.is_set(v)) {
                 if(distanceV < tentativeDistanceCurrent[v]) {
 #ifdef USE_STALLING
@@ -246,9 +246,9 @@ protected:
         };
 
 #ifdef USE_STALLING
-        auto stallFunc = [&] (NODE_T v, EDGERANK_T rank, EDGEWEIGHT_T weight) {
+        auto stallFunc = [&] (const NODE_T v, const EDGERANK_T rank, const EDGEWEIGHT_T weight) {
             ++numEdgesRelaxed;
-            EDGEWEIGHT_T distanceV = distanceU + weight;
+            EDGEWEIGHT_T const distanceV = distanceU + weight;
             if(wasPushedCurrent.is_set(v)) {
                 if(tentativeDistanceCurrent[v] > distanceV) {
                     if(actualDistanceSetCurrent.is_set(v)) {
