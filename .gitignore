@@ -241,3 +241,5 @@ tags
 
 build/
 releaseBuild/
+extern/RoutingKit/bin
+results
