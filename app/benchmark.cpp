@@ -58,7 +58,7 @@ RoutingKit::ContractionHierarchy getCHFromGraph(EdgeHierarchyGraph &g) {
 }
 
 template<class EdgeRanker>
-void buildAndWriteEdgeHierarchy(EdgeHierarchyGraph &g, std::string outputFilename) {
+void buildAndWriteEdgeHierarchy(EdgeHierarchyGraph &g, std::string edgeHierarchyFilename) {
     EdgeHierarchyQuery query(g);
 
     EdgeHierarchyConstruction<EdgeRanker> construction(g, query);
@@ -73,10 +73,10 @@ void buildAndWriteEdgeHierarchy(EdgeHierarchyGraph &g, std::string outputFilenam
 
     cout << "Distance in Query graph was equal to removed path " << numEquals << " times" <<endl;
 
-    cout << "Writing Edge Hierarchy to " << outputFilename <<endl;
+    cout << "Writing Edge Hierarchy to " << edgeHierarchyFilename <<endl;
 
     start = chrono::steady_clock::now();
-    writeEdgeHierarchy(outputFilename, g);
+    writeEdgeHierarchy(edgeHierarchyFilename, g);
 	end = chrono::steady_clock::now();
 
 	cout << "Writing EH took "
@@ -193,55 +193,77 @@ int main(int argc, char* argv[]) {
     // output for debugging
     cp.print_result();
 
-    std::string outputFilename = filename;
+    std::string edgeHierarchyFilename = filename;
     if(addTurnCosts) {
-        outputFilename += "Turncosts";
+        edgeHierarchyFilename += "Turncosts";
     }
-    outputFilename += "ShortcutCountingRoundsEdgeRanker";
-    outputFilename += ".eh";
+    edgeHierarchyFilename += "ShortcutCountingRoundsEdgeRanker";
+    edgeHierarchyFilename += ".eh";
 
-    auto start = chrono::steady_clock::now();
-    EdgeHierarchyGraph g = readGraphDimacs(filename);
-	auto end = chrono::steady_clock::now();
 
-	cout << "Reading input graph took "
-         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
-         << " ms" << endl;
+    std::string contractionHierarchyFilename = filename;
+    if(addTurnCosts) {
+        contractionHierarchyFilename += "Turncosts";
+    }
+    contractionHierarchyFilename += ".ch";
+    EdgeHierarchyGraph g(0);
 
-    cout << "Input graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+    if(fileExists(edgeHierarchyFilename) && fileExists(contractionHierarchyFilename)) {
+        std::cout << "Skip reading graph file because both EH and CH are already on disk" << std::endl;
+    }
+    else {
+        auto start = chrono::steady_clock::now();
+        g = readGraphDimacs(filename);
+        auto end = chrono::steady_clock::now();
 
-    if(addTurnCosts){
-        start = chrono::steady_clock::now();
-        g = g.getTurnCostGraph();
-        end = chrono::steady_clock::now();
-
-        cout << "Adding turn costs took "
+        cout << "Reading input graph took "
              << chrono::duration_cast<chrono::milliseconds>(end - start).count()
              << " ms" << endl;
 
-        cout << "Turn cost graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+        cout << "Input graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+
+        if(addTurnCosts){
+            start = chrono::steady_clock::now();
+            g = g.getTurnCostGraph();
+            end = chrono::steady_clock::now();
+
+            cout << "Adding turn costs took "
+                 << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+                 << " ms" << endl;
+
+            cout << "Turn cost graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
+        }
     }
 
-    start = chrono::steady_clock::now();
-    auto ch = getCHFromGraph(g);
+    RoutingKit::ContractionHierarchy ch;
+    if(fileExists(contractionHierarchyFilename)) {
+        std::cout << "Contraction Hierarchy already stored in file. Loading it..." << std::endl;
+        ch = RoutingKit::ContractionHierarchy::load_file(contractionHierarchyFilename);
+    }
+    else {
+        std::cout << "Building Contraction Hierarchy..." << std::endl;
+        auto start = chrono::steady_clock::now();
+        ch = getCHFromGraph(g);
+        auto end = chrono::steady_clock::now();
+
+        cout << "CH Construction took "
+             << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+             << " ms" << endl;
+        ch.save_file(contractionHierarchyFilename);
+    }
+
     RoutingKit::ContractionHierarchyQuery chQuery(ch);
-    end = chrono::steady_clock::now();
-
-    cout << "CH Construction took "
-         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
-         << " ms" << endl;
-
 
     cout << "CH has " << ch.forward.first_out.back() + ch.backward.first_out.back() << " edges" << endl;
 
 
-    if(fileExists(outputFilename)) {
+    if(fileExists(edgeHierarchyFilename)) {
         std::cout << "Edge Hierarchy already stored in file. Loading it..." << std::endl;
-        g = readEdgeHierarchy(outputFilename);
+        g = readEdgeHierarchy(edgeHierarchyFilename);
     }
     else {
         std::cout << "Building Edge Hierarchy..." << std::endl;
-        buildAndWriteEdgeHierarchy<ShortcutCountingRoundsEdgeRanker>(g, outputFilename);
+        buildAndWriteEdgeHierarchy<ShortcutCountingRoundsEdgeRanker>(g, edgeHierarchyFilename);
     }
     g.sortEdges();
     EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
@@ -296,7 +318,7 @@ int main(int argc, char* argv[]) {
 
 
     newQuery.resetCounters();
-    start = chrono::steady_clock::now();
+    auto start = chrono::steady_clock::now();
     for(auto &generatedQuery: queries) {
         NODE_T u = generatedQuery.source;
         NODE_T v = generatedQuery.target;
@@ -315,7 +337,7 @@ int main(int argc, char* argv[]) {
             generatedQuery.edgesRelaxedEH = newQuery.numEdgesRelaxed;
         }
     }
-	end = chrono::steady_clock::now();
+	auto end = chrono::steady_clock::now();
 
     if(!dijkstraRank) {
         cout << "Average query time (EH): "
@@ -328,11 +350,6 @@ int main(int argc, char* argv[]) {
              << newQuery.numEdgesRelaxed/queries.size()
              << endl;
     }
-
-
-
-
-
 
     chQuery.resetCounters();
     start = chrono::steady_clock::now();
