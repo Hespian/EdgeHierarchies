@@ -349,6 +349,9 @@ int main(int argc, char* argv[]) {
         cout << "Average number of edges relaxed (EH): "
              << newQuery.numEdgesRelaxed/queries.size()
              << endl;
+        cout << "Average number of edges looked at for stalling (EH): "
+             << newQuery.numEdgesLookedAtForStalling/queries.size()
+             << endl;
     }
 
     chQuery.resetCounters();

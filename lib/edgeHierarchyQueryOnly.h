@@ -25,6 +25,7 @@ class EdgeHierarchyQueryOnly {
 public:
     int numVerticesSettled;
     int numEdgesRelaxed;
+    int numEdgesLookedAtForStalling;
     int popCount;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledForward;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledBackward;
@@ -47,11 +48,13 @@ public:
     {
         numVerticesSettled = 0;
         numEdgesRelaxed = 0;
+        numEdgesLookedAtForStalling = 0;
     };
 
     void resetCounters() {
         numVerticesSettled = 0;
         numEdgesRelaxed = 0;
+        numEdgesLookedAtForStalling = 0;
     }
 
     EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT) {
@@ -141,7 +144,7 @@ protected:
         bool result = false;
 
         auto stallCheckFunc = [&] (NODE_T u, EDGEWEIGHT_T weight) {
-            ++numEdgesRelaxed;
+            ++numEdgesLookedAtForStalling;
             if(wasPushedCurrent.is_set(u)) {
                 EDGEWEIGHT_T distanceV = tentativeDistanceCurrent[u] + weight;
                 if(distanceV < tentativeDistanceCurrent[v]) {
@@ -247,7 +250,7 @@ protected:
 
 #ifdef USE_STALLING
         auto stallFunc = [&] (const NODE_T v, const EDGERANK_T rank, const EDGEWEIGHT_T weight) {
-            ++numEdgesRelaxed;
+            ++numEdgesLookedAtForStalling;
             EDGEWEIGHT_T const distanceV = distanceU + weight;
             if(wasPushedCurrent.is_set(v)) {
                 if(tentativeDistanceCurrent[v] > distanceV) {
