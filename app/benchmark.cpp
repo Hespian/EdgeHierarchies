@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <random>
+#include <fstream>
 
 #include <tlx/cmdline_parser.hpp>
 
@@ -27,9 +28,16 @@
 #include "edgeHierarchyQueryOnly.h"
 #include "edgeHierarchyConstruction.h"
 #include "dimacsGraphReader.h"
+#include "edgeHierarchyWriter.h"
+#include "edgeHierarchyReader.h"
 #include "edgeRanking/shortcutCountingRoundsEdgeRanker.h"
 #include "edgeRanking/shortcutCountingSortingRoundsEdgeRanker.h"
 #include "edgeRanking/levelShortcutsHopsEdgeRanker.h"
+
+bool fileExists (const std::string& name) {
+    ifstream f(name.c_str());
+    return f.good();
+}
 
 RoutingKit::ContractionHierarchy getCHFromGraph(EdgeHierarchyGraph &g) {
     std::vector<unsigned> tails, heads, weights;
@@ -47,6 +55,33 @@ RoutingKit::ContractionHierarchy getCHFromGraph(EdgeHierarchyGraph &g) {
                                                    tails, heads,
                                                    weights
                                                    );
+}
+
+template<class EdgeRanker>
+void buildAndWriteEdgeHierarchy(EdgeHierarchyGraph &g, std::string outputFilename) {
+    EdgeHierarchyQuery query(g);
+
+    EdgeHierarchyConstruction<EdgeRanker> construction(g, query);
+
+    auto start = chrono::steady_clock::now();
+    construction.run();
+	auto end = chrono::steady_clock::now();
+
+	cout << "EH Construction took "
+         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+         << " ms" << endl;
+
+    cout << "Distance in Query graph was equal to removed path " << numEquals << " times" <<endl;
+
+    cout << "Writing Edge Hierarchy to " << outputFilename <<endl;
+
+    start = chrono::steady_clock::now();
+    writeEdgeHierarchy(outputFilename, g);
+	end = chrono::steady_clock::now();
+
+	cout << "Writing EH took "
+         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+         << " ms" << endl;
 }
 
 #define INVALID_QUERY_DATA std::numeric_limits<unsigned>::max()
@@ -158,6 +193,13 @@ int main(int argc, char* argv[]) {
     // output for debugging
     cp.print_result();
 
+    std::string outputFilename = filename;
+    if(addTurnCosts) {
+        outputFilename += "Turncosts";
+    }
+    outputFilename += "ShortcutCountingRoundsEdgeRanker";
+    outputFilename += ".eh";
+
     auto start = chrono::steady_clock::now();
     EdgeHierarchyGraph g = readGraphDimacs(filename);
 	auto end = chrono::steady_clock::now();
@@ -193,21 +235,13 @@ int main(int argc, char* argv[]) {
     cout << "CH has " << ch.forward.first_out.back() + ch.backward.first_out.back() << " edges" << endl;
 
 
-
-    {
-        EdgeHierarchyQuery query(g);
-
-        EdgeHierarchyConstruction<ShortcutCountingRoundsEdgeRanker> construction(g, query);
-
-        start = chrono::steady_clock::now();
-        construction.run();
-        end = chrono::steady_clock::now();
-
-        cout << "EH Construction took "
-             << chrono::duration_cast<chrono::milliseconds>(end - start).count()
-             << " ms" << endl;
-
-        cout << "Distance in Query graph was equal to removed path " << numEquals << " times" <<endl;
+    if(fileExists(outputFilename)) {
+        std::cout << "Edge Hierarchy already stored in file. Loading it..." << std::endl;
+        g = readEdgeHierarchy(outputFilename);
+    }
+    else {
+        std::cout << "Building Edge Hierarchy..." << std::endl;
+        buildAndWriteEdgeHierarchy<ShortcutCountingRoundsEdgeRanker>(g, outputFilename);
     }
     g.sortEdges();
     EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
