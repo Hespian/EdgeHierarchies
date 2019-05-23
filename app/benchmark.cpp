@@ -161,6 +161,157 @@ std::vector<DijkstraRankRunningtime> GenerateRandomQueries(unsigned numQueries, 
     return result;
 }
 
+template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand>
+int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+    EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, false> newQuery = EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, false>(ehGraph);
+
+
+    int numMistakes = 0;
+    int numCorrect = 0;
+    if(test) {
+        for(auto &generatedQuery: queries) {
+            NODE_T u = generatedQuery.source;
+            NODE_T v = generatedQuery.target;
+
+            EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
+
+            chQuery.reset().add_source(u).add_target(v).run<CHStallOnDemand, false>();
+            auto chDistance = chQuery.get_distance();
+
+            if(generatedQuery.distance == INVALID_QUERY_DATA) {
+                generatedQuery.distance = chDistance;
+            }
+
+            if(generatedQuery.distance != distance) {
+                cout << "EH: Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << generatedQuery.distance << ")" << endl;
+                numMistakes++;
+            } else {
+                numCorrect++;
+            }
+
+            if(generatedQuery.distance != chDistance) {
+                cout << "CH: Wrong distance for " << u << " and " << v << ": " << chDistance << " (should be " << generatedQuery.distance << ")" << endl;
+            } else {
+            }
+        }
+
+        cout << numMistakes << " out of " << queries.size() << " WRONG!!!" << endl;
+
+        cout << numCorrect << " out of " << queries.size() << " CORRECT!" << endl;
+
+        cout << "Done checking. Measuring time..." << endl;
+    }
+
+
+
+    newQuery.resetCounters();
+    auto start = chrono::steady_clock::now();
+    for(auto &generatedQuery: queries) {
+        NODE_T u = generatedQuery.source;
+        NODE_T v = generatedQuery.target;
+
+        if(dijkstraRank) {
+            newQuery.resetCounters();
+        }
+        auto queryStart = chrono::high_resolution_clock::now();
+        EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
+        (void) distance;
+        auto queryEnd = chrono::high_resolution_clock::now();
+        if(dijkstraRank) {
+            generatedQuery.timeEH = chrono::duration_cast<chrono::nanoseconds>(queryEnd - queryStart).count();
+            generatedQuery.verticesSettledEH = newQuery.numVerticesSettled;
+            generatedQuery.edgesRelaxedEH = newQuery.numEdgesRelaxed + newQuery.numEdgesLookedAtForStalling;
+        }
+    }
+	auto end = chrono::steady_clock::now();
+
+    if(!dijkstraRank) {
+        cout << "Average query time (EH): "
+             << chrono::duration_cast<chrono::microseconds>(end - start).count() / queries.size()
+             << " us" << endl;
+        cout << "Average number of vertices settled (EH): "
+             << newQuery.numVerticesSettled/queries.size()
+             << endl;
+        cout << "Average number of edges relaxed (EH): "
+             << newQuery.numEdgesRelaxed/queries.size()
+             << endl;
+        cout << "Average number of edges looked at for stalling (EH): "
+             << newQuery.numEdgesLookedAtForStalling/queries.size()
+             << endl;
+    }
+
+    chQuery.resetCounters();
+    start = chrono::steady_clock::now();
+    for(auto &generatedQuery: queries) {
+        NODE_T u = generatedQuery.source;
+        NODE_T v = generatedQuery.target;
+
+        if(dijkstraRank) {
+            chQuery.resetCounters();
+        }
+        auto queryStart = chrono::high_resolution_clock::now();
+        chQuery.reset().add_source(u).add_target(v).run<CHStallOnDemand, false>();
+        auto chDistance = chQuery.get_distance();
+        (void) chDistance;
+        auto queryEnd = chrono::high_resolution_clock::now();
+        if(dijkstraRank) {
+            generatedQuery.timeCH = chrono::duration_cast<chrono::nanoseconds>(queryEnd - queryStart).count();
+            generatedQuery.verticesSettledCH = chQuery.getNumVerticesSettled();
+            generatedQuery.edgesRelaxedCH = chQuery.getNumEdgesRelaxed() + chQuery.getNumEdgesLookedAtForStalling();
+        }
+    }
+    end = chrono::steady_clock::now();
+
+    if(!dijkstraRank) {
+        cout << "Average query time (CH): "
+             << chrono::duration_cast<chrono::microseconds>(end - start).count() / queries.size()
+             << " us" << endl;
+        chQuery.printCounters(queries.size());
+    }
+
+    if(dijkstraRank) {
+        std::cout << "Format: rank time vertices edges" << std::endl;
+        for(auto &generatedQuery: queries) {
+            unsigned rank = generatedQuery.rank;
+            int timeEH = generatedQuery.timeEH;
+            int numVerticesSettledEH = generatedQuery.verticesSettledEH;
+            int numEdgesRelaxedEH = generatedQuery.edgesRelaxedEH;
+            int timeCH = generatedQuery.timeCH;
+            int numVerticesSettledCH = generatedQuery.verticesSettledCH;
+            int numEdgesRelaxedCH = generatedQuery.edgesRelaxedCH;
+
+            std::cout << "result EH: " << rank << " " << timeEH << " " << numVerticesSettledEH << " " << numEdgesRelaxedEH << std::endl;
+            std::cout << "result CH: " << rank << " " << timeCH << " " << numVerticesSettledCH << " " << numEdgesRelaxedCH << std::endl;
+        }
+    }
+
+    return numMistakes;
+}
+
+template<bool EHForwardStalling, bool EHBackwardStalling>
+int benchmark(bool CHStallOnDemand, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+    if(CHStallOnDemand)
+        return benchmark<EHForwardStalling, EHBackwardStalling, true>(dijkstraRank, test, ehGraph, chQuery, queries);
+    else
+        return benchmark<EHForwardStalling, EHBackwardStalling, false>(dijkstraRank, test, ehGraph, chQuery, queries);
+}
+
+template<bool EHForwardStalling>
+int benchmark(bool EHBackwardStalling, bool CHStallOnDemand, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+    if(EHBackwardStalling)
+        return benchmark<EHForwardStalling, true>(CHStallOnDemand, dijkstraRank, test, ehGraph, chQuery, queries);
+    else
+        return benchmark<EHForwardStalling, false>(CHStallOnDemand, dijkstraRank, test, ehGraph, chQuery, queries);
+}
+
+int benchmark(bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+    if(EHForwardStalling)
+        return benchmark<true>(EHBackwardStalling, CHStallOnDemand, dijkstraRank, test, ehGraph, chQuery, queries);
+    else
+        return benchmark<false>(EHBackwardStalling, CHStallOnDemand, dijkstraRank, test, ehGraph, chQuery, queries);
+}
+
+
 int main(int argc, char* argv[]) {
     tlx::CmdlineParser cp;
 
@@ -187,11 +338,29 @@ int main(int argc, char* argv[]) {
     cp.add_bool ('d', "dijkstraRank", dijkstraRank,
                  "If this flag is set, queries are generated for dijkstra ranks of powers of two with numQueries source vertices.");
 
+    bool EHForwardStalling = false;
+    cp.add_bool ("EHForwardStalling", EHForwardStalling,
+                 "If this flag is set, Edge Hierarchy queries will use forward stalling");
+
+    bool EHBackwardStalling = false;
+    cp.add_bool ("EHBackwardStalling", EHBackwardStalling,
+                 "If this flag is set, Edge Hierarchy queries will use backward stalling");
+
+    bool CHNoStallOnDemand = false;
+    cp.add_bool ("CHNoStallOnDemand", CHNoStallOnDemand,
+                 "If this flag is set, Contraction Hierarchy queries will NOT use stall on demand");
+
+    bool test = false;
+    cp.add_bool ("test", test,
+                 "If this flag is set, correctness will be checked");
+
     // process command line
     if (!cp.process(argc, argv))
         return -1; // some error occurred and help was always written to user.
     // output for debugging
     cp.print_result();
+
+    bool CHStallOnDemand = !CHNoStallOnDemand;
 
     std::string edgeHierarchyFilename = filename;
     if(addTurnCosts) {
@@ -267,11 +436,8 @@ int main(int argc, char* argv[]) {
     }
     g.sortEdges();
     EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
-    EdgeHierarchyQueryOnly<false, false, false> newQuery = EdgeHierarchyQueryOnly<false, false, false>(newG);
     newG.makeConsecutive();
-
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
-
     cout << "DFS ordered edge hierarchy graph has " << newG.getNumberOfNodes() << " vertices and " << newG.getNumberOfEdges() << " edges" << endl;
 
     std::vector<DijkstraRankRunningtime> queries;
@@ -281,122 +447,6 @@ int main(int argc, char* argv[]) {
         queries = GenerateRandomQueries(numQueries, seed, g);
     }
 
-    int numMistakes = 0;
-    int numCorrect = 0;
-    for(auto &generatedQuery: queries) {
-        NODE_T u = generatedQuery.source;
-        NODE_T v = generatedQuery.target;
+    return benchmark(EHForwardStalling, EHBackwardStalling, CHStallOnDemand, dijkstraRank, test, newG, chQuery, queries);
 
-        EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
-
-        chQuery.reset().add_source(u).add_target(v).run<true, false>();
-        auto chDistance = chQuery.get_distance();
-
-        if(generatedQuery.distance == INVALID_QUERY_DATA) {
-            generatedQuery.distance = chDistance;
-        }
-
-        if(generatedQuery.distance != distance) {
-            cout << "EH: Wrong distance for " << u << " and " << v << ": " << distance << " (should be " << generatedQuery.distance << ")" << endl;
-            numMistakes++;
-        } else {
-            numCorrect++;
-        }
-
-        if(generatedQuery.distance != chDistance) {
-            cout << "CH: Wrong distance for " << u << " and " << v << ": " << chDistance << " (should be " << generatedQuery.distance << ")" << endl;
-        } else {
-        }
-    }
-
-    cout << numMistakes << " out of " << numQueries << " WRONG!!!" << endl;
-
-    cout << numCorrect << " out of " << numQueries << " CORRECT!" << endl;
-
-    cout << "Done checking. Measuring time..." << endl;
-
-
-
-    newQuery.resetCounters();
-    auto start = chrono::steady_clock::now();
-    for(auto &generatedQuery: queries) {
-        NODE_T u = generatedQuery.source;
-        NODE_T v = generatedQuery.target;
-
-        if(dijkstraRank) {
-            newQuery.resetCounters();
-        }
-        auto queryStart = chrono::high_resolution_clock::now();
-        EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
-        (void) distance;
-        auto queryEnd = chrono::high_resolution_clock::now();
-        if(dijkstraRank) {
-            generatedQuery.timeEH = chrono::duration_cast<chrono::nanoseconds>(queryEnd - queryStart).count();
-            generatedQuery.verticesSettledEH = newQuery.numVerticesSettled;
-            generatedQuery.edgesRelaxedEH = newQuery.numEdgesRelaxed + newQuery.numEdgesLookedAtForStalling;
-        }
-    }
-	auto end = chrono::steady_clock::now();
-
-    if(!dijkstraRank) {
-        cout << "Average query time (EH): "
-             << chrono::duration_cast<chrono::microseconds>(end - start).count() / queries.size()
-             << " us" << endl;
-        cout << "Average number of vertices settled (EH): "
-             << newQuery.numVerticesSettled/queries.size()
-             << endl;
-        cout << "Average number of edges relaxed (EH): "
-             << newQuery.numEdgesRelaxed/queries.size()
-             << endl;
-        cout << "Average number of edges looked at for stalling (EH): "
-             << newQuery.numEdgesLookedAtForStalling/queries.size()
-             << endl;
-    }
-
-    chQuery.resetCounters();
-    start = chrono::steady_clock::now();
-    for(auto &generatedQuery: queries) {
-        NODE_T u = generatedQuery.source;
-        NODE_T v = generatedQuery.target;
-
-        if(dijkstraRank) {
-            chQuery.resetCounters();
-        }
-        auto queryStart = chrono::high_resolution_clock::now();
-        chQuery.reset().add_source(u).add_target(v).run<true, false>();
-        auto chDistance = chQuery.get_distance();
-        (void) chDistance;
-        auto queryEnd = chrono::high_resolution_clock::now();
-        if(dijkstraRank) {
-            generatedQuery.timeCH = chrono::duration_cast<chrono::nanoseconds>(queryEnd - queryStart).count();
-            generatedQuery.verticesSettledCH = chQuery.getNumVerticesSettled();
-            generatedQuery.edgesRelaxedCH = chQuery.getNumEdgesRelaxed() + chQuery.getNumEdgesLookedAtForStalling();
-        }
-    }
-    end = chrono::steady_clock::now();
-
-    if(!dijkstraRank) {
-        cout << "Average query time (CH): "
-             << chrono::duration_cast<chrono::microseconds>(end - start).count() / numQueries
-             << " us" << endl;
-        chQuery.printCounters(numQueries);
-    }
-
-    if(dijkstraRank) {
-        std::cout << "Format: rank time vertices edges" << std::endl;
-        for(auto &generatedQuery: queries) {
-            unsigned rank = generatedQuery.rank;
-            int timeEH = generatedQuery.timeEH;
-            int numVerticesSettledEH = generatedQuery.verticesSettledEH;
-            int numEdgesRelaxedEH = generatedQuery.edgesRelaxedEH;
-            int timeCH = generatedQuery.timeCH;
-            int numVerticesSettledCH = generatedQuery.verticesSettledCH;
-            int numEdgesRelaxedCH = generatedQuery.edgesRelaxedCH;
-
-            std::cout << "result EH: " << rank << " " << timeEH << " " << numVerticesSettledEH << " " << numEdgesRelaxedEH << std::endl;
-            std::cout << "result CH: " << rank << " " << timeCH << " " << numVerticesSettledCH << " " << numEdgesRelaxedCH << std::endl;
-        }
-    }
-
-    return numMistakes;
 }
