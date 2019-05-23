@@ -134,6 +134,7 @@ protected:
                 currentRoundEdges.push_back(edgeId);
             }
         }
+        std::cout << "Queued " << currentRoundEdges.size() << " out of " << edgesInGraph.size() <<std::endl;
     }
 
     EdgeHierarchyGraph &g;
