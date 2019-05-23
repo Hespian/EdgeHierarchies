@@ -18,10 +18,4 @@ target_compile_options(benchmark PRIVATE -g)
 target_link_libraries(benchmark tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)
 add_dependencies(benchmark RoutingKit)
 
-add_executable(calculateMinimalSearchSpace calculateMinimalSearchSpace.cpp)
-target_compile_options(calculateMinimalSearchSpace PRIVATE -Wall)
-target_compile_options(calculateMinimalSearchSpace PRIVATE -g)
-target_link_libraries(calculateMinimalSearchSpace tlx ${PROJECT_SOURCE_DIR}/extern/RoutingKit/lib/libroutingkit.so)
-add_dependencies(calculateMinimalSearchSpace RoutingKit)
-
 
