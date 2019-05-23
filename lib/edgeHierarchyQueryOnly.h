@@ -18,10 +18,8 @@
 #include "definitions.h"
 #include "edgeHierarchyGraphQueryOnly.h"
 
-#define LOG_VERTICES_SETTLED false
-// #define USE_STALLING
 
-template <bool stallForward, bool stallBackward>
+template <bool stallForward, bool stallBackward, bool logVerticesSettled>
 class EdgeHierarchyQueryOnly {
 public:
     int numVerticesSettled;
@@ -69,7 +67,7 @@ public:
 
         popCount = 0;
 
-        if(LOG_VERTICES_SETTLED) {
+        if constexpr(logVerticesSettled) {
             verticesSettledForward.clear();
             verticesSettledBackward.clear();
         }
@@ -208,7 +206,7 @@ protected:
             }
 
 
-        if(LOG_VERTICES_SETTLED) {
+        if constexpr(logVerticesSettled) {
             if(forward){
                 verticesSettledForward.push_back({g.getExternalNodeNumber(u), distanceU});
             } else {
