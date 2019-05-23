@@ -119,6 +119,7 @@ public:
 	ContractionHierarchyQuery&add_source(unsigned s, unsigned dist_to_s = 0);
 	ContractionHierarchyQuery&add_target(unsigned t, unsigned dist_to_t = 0);
 
+    template<bool stallOnDemand = true, bool logVerticesSettled = false>
 	ContractionHierarchyQuery&run();
 
 	unsigned get_used_source();

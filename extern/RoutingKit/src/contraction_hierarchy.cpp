@@ -11,7 +11,6 @@
 #include <stdexcept>
 #include <iostream>
 
-#define LOG_VERTICES_SETTLED false
 
 namespace RoutingKit{
 
@@ -1685,7 +1684,7 @@ namespace{
 		return false;
 	}
 
-
+    template<bool stallOnDemand>
 	void forward_settle_node(
 		unsigned&shortest_path_length,
 		unsigned&shortest_path_meeting_node,
@@ -1711,12 +1710,12 @@ namespace{
 		}
 		
 		if(
-			!forward_can_stall_at_node(
+			stallOnDemand ? !forward_can_stall_at_node(
 				popped_node,
 				backward_first_out, backward_head, backward_weight,
 				was_forward_pushed,
 				forward_tentative_distance, backward_tentative_distance
-			)
+                                                       ) : true
 		)
 			forward_expand_upward_ch_arcs_of_node(
 				popped_node, distance_to_popped_node,
@@ -1760,13 +1759,14 @@ namespace{
 	
 }
 
+template<bool stallOnDemand = true, bool logVerticesSettled = false>
 ContractionHierarchyQuery& ContractionHierarchyQuery::run(){
 	assert(ch && "query object must have an attached CH");
 	assert(!forward_queue.empty() && "must add at least one source before calling run");
 	assert(!backward_queue.empty() && "must add at least one target before calling run");
 	assert(state == ContractionHierarchyQuery::InternalState::initialized);
 
-    if(LOG_VERTICES_SETTLED) {
+    if constexpr(logVerticesSettled) {
         verticesSettledForward.clear();
         verticesSettledBackward.clear();
     }
@@ -1798,10 +1798,10 @@ ContractionHierarchyQuery& ContractionHierarchyQuery::run(){
 			forward_next = true;
 
 		if(forward_next){
-            if(LOG_VERTICES_SETTLED) {
+            if constexpr(logVerticesSettled) {
                 verticesSettledForward.push_back({ch->order[forward_queue.peek().id], forward_queue.peek().key});
             }
-			forward_settle_node(
+			forward_settle_node<stallOnDemand>(
 				shortest_path_length, shortest_path_meeting_node,
 				ch->forward.first_out, ch->forward.head, ch->forward.weight,
 				ch->backward.first_out, ch->backward.head, ch->backward.weight,
@@ -1812,10 +1812,10 @@ ContractionHierarchyQuery& ContractionHierarchyQuery::run(){
 			);
 			forward_next = false;
 		} else {
-            if(LOG_VERTICES_SETTLED) {
+            if constexpr(logVerticesSettled) {
                 verticesSettledBackward.push_back({ch->order[backward_queue.peek().id], backward_queue.peek().key});
             }
-			forward_settle_node(
+			forward_settle_node<stallOnDemand>(
 				shortest_path_length, shortest_path_meeting_node,
 				ch->backward.first_out, ch->backward.head, ch->backward.weight,
 				ch->forward.first_out, ch->forward.head, ch->forward.weight,
@@ -2361,6 +2361,11 @@ template unsigned ContractionHierarchyQuery::get_extra_weight_distance<std::vect
 template int ContractionHierarchyQuery::get_extra_weight_distance<std::vector<int>,SaturatedWeightAddition>(const std::vector<int>&, const SaturatedWeightAddition&);
 template unsigned ContractionHierarchyQuery::get_extra_weight_distance<ContractionHierarchyExtraWeight<unsigned>,SaturatedWeightAddition>(const ContractionHierarchyExtraWeight<unsigned>&, const SaturatedWeightAddition&);
 template int ContractionHierarchyQuery::get_extra_weight_distance<ContractionHierarchyExtraWeight<int>,SaturatedWeightAddition>(const ContractionHierarchyExtraWeight<int>&, const SaturatedWeightAddition&);
+
+    template ContractionHierarchyQuery& ContractionHierarchyQuery::run<false, false>();
+    template ContractionHierarchyQuery& ContractionHierarchyQuery::run<false, true>();
+    template ContractionHierarchyQuery& ContractionHierarchyQuery::run<true, false>();
+    template ContractionHierarchyQuery& ContractionHierarchyQuery::run<true, true>();
 
 } // namespace RoutingKit
 

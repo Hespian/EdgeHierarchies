@@ -289,7 +289,7 @@ int main(int argc, char* argv[]) {
 
         EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
 
-        chQuery.reset().add_source(u).add_target(v).run();
+        chQuery.reset().add_source(u).add_target(v).run<true, false>();
         auto chDistance = chQuery.get_distance();
 
         if(generatedQuery.distance == INVALID_QUERY_DATA) {
@@ -363,7 +363,7 @@ int main(int argc, char* argv[]) {
             chQuery.resetCounters();
         }
         auto queryStart = chrono::high_resolution_clock::now();
-        chQuery.reset().add_source(u).add_target(v).run();
+        chQuery.reset().add_source(u).add_target(v).run<true, false>();
         auto chDistance = chQuery.get_distance();
         (void) chDistance;
         auto queryEnd = chrono::high_resolution_clock::now();
