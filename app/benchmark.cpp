@@ -161,9 +161,9 @@ std::vector<DijkstraRankRunningtime> GenerateRandomQueries(unsigned numQueries, 
     return result;
 }
 
-template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand>
+template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace>
 int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
-    EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, false> newQuery = EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, false>(ehGraph);
+    EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, minimalSearchSpace> newQuery = EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, minimalSearchSpace>(ehGraph);
 
 
     int numMistakes = 0;
@@ -175,7 +175,7 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
 
             EDGEWEIGHT_T distance = newQuery.getDistance(u, v);
 
-            chQuery.reset().add_source(u).add_target(v).run<CHStallOnDemand, false>();
+            chQuery.reset().add_source(u).add_target(v).run<CHStallOnDemand, minimalSearchSpace>();
             auto chDistance = chQuery.get_distance();
 
             if(generatedQuery.distance == INVALID_QUERY_DATA) {
@@ -204,6 +204,7 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
 
 
 
+    int numVerticesSettledWithActualDistance = 0;
     newQuery.resetCounters();
     auto start = chrono::steady_clock::now();
     for(auto &generatedQuery: queries) {
@@ -222,6 +223,29 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
             generatedQuery.verticesSettledEH = newQuery.numVerticesSettled;
             generatedQuery.edgesRelaxedEH = newQuery.numEdgesRelaxed + newQuery.numEdgesLookedAtForStalling;
         }
+
+        if constexpr(minimalSearchSpace){
+            for(std::pair<NODE_T, EDGEWEIGHT_T> nodeDistancePair: newQuery.verticesSettledForward) {
+                chQuery.reset().add_source(u).add_target(nodeDistancePair.first).run();
+                unsigned actualDistance = chQuery.get_distance();
+                if(actualDistance == nodeDistancePair.second) {
+                    ++numVerticesSettledWithActualDistance;
+                }
+                if(actualDistance > nodeDistancePair.second) {
+                    std::cout << "IMPOSSIBLE!!!" <<std::endl;
+                }
+            }
+            for(std::pair<NODE_T, EDGEWEIGHT_T> nodeDistancePair: newQuery.verticesSettledBackward) {
+                chQuery.reset().add_source(nodeDistancePair.first).add_target(v).run();
+                unsigned actualDistance = chQuery.get_distance();
+                if(actualDistance == nodeDistancePair.second) {
+                    ++numVerticesSettledWithActualDistance;
+                }
+                if(actualDistance > nodeDistancePair.second) {
+                    std::cout << "IMPOSSIBLE!!!" <<std::endl;
+                }
+            }
+        }
     }
 	auto end = chrono::steady_clock::now();
 
@@ -229,6 +253,11 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
         cout << "Average query time (EH): "
              << chrono::duration_cast<chrono::microseconds>(end - start).count() / queries.size()
              << " us" << endl;
+        if constexpr(minimalSearchSpace) {
+                cout << "MINIMAL average number of vertices settled (EH): "
+                     << numVerticesSettledWithActualDistance/queries.size()
+                     << endl;
+            }
         cout << "Average number of vertices settled (EH): "
              << newQuery.numVerticesSettled/queries.size()
              << endl;
@@ -240,6 +269,7 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
              << endl;
     }
 
+    numVerticesSettledWithActualDistance = 0;
     chQuery.resetCounters();
     start = chrono::steady_clock::now();
     for(auto &generatedQuery: queries) {
@@ -250,7 +280,7 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
             chQuery.resetCounters();
         }
         auto queryStart = chrono::high_resolution_clock::now();
-        chQuery.reset().add_source(u).add_target(v).run<CHStallOnDemand, false>();
+        chQuery.reset().add_source(u).add_target(v).run<CHStallOnDemand, minimalSearchSpace>();
         auto chDistance = chQuery.get_distance();
         (void) chDistance;
         auto queryEnd = chrono::high_resolution_clock::now();
@@ -259,6 +289,29 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
             generatedQuery.verticesSettledCH = chQuery.getNumVerticesSettled();
             generatedQuery.edgesRelaxedCH = chQuery.getNumEdgesRelaxed() + chQuery.getNumEdgesLookedAtForStalling();
         }
+        if constexpr(minimalSearchSpace){
+            auto verticesSettledForward = chQuery.getVerticesSettledForward();
+            auto verticesSettledBackward = chQuery.getVerticesSettledBackward();
+
+            for(const std::pair<unsigned, unsigned> &nodeDistancePair: verticesSettledForward) {
+                unsigned actualDistance = newQuery.getDistance(u, nodeDistancePair. first);
+                if(actualDistance == nodeDistancePair.second) {
+                    ++numVerticesSettledWithActualDistance;
+                }
+                if(actualDistance > nodeDistancePair.second) {
+                    std::cout << "IMPOSSIBLE!!! Distance from " << u << " to " << nodeDistancePair.first << " is " << actualDistance << " but was settled at " << nodeDistancePair.second <<std::endl;
+                }
+            }
+            for(const std::pair<unsigned, unsigned> &nodeDistancePair: verticesSettledBackward) {
+                unsigned actualDistance = newQuery.getDistance(nodeDistancePair.first, v);
+                if(actualDistance == nodeDistancePair.second) {
+                    ++numVerticesSettledWithActualDistance;
+                }
+                if(actualDistance > nodeDistancePair.second) {
+                    std::cout << "IMPOSSIBLE!!! Distance from " << nodeDistancePair.first << " to " << v << " is " << actualDistance << " but was settled at " << nodeDistancePair.second <<std::endl;
+                }
+            }
+        }
     }
     end = chrono::steady_clock::now();
 
@@ -266,6 +319,11 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
         cout << "Average query time (CH): "
              << chrono::duration_cast<chrono::microseconds>(end - start).count() / queries.size()
              << " us" << endl;
+        if constexpr(minimalSearchSpace) {
+            cout << "MINIMAL average number of vertices settled (CH): "
+                 << numVerticesSettledWithActualDistance/queries.size()
+                 << endl;
+        }
         chQuery.printCounters(queries.size());
     }
 
@@ -288,27 +346,35 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
     return numMistakes;
 }
 
-template<bool EHForwardStalling, bool EHBackwardStalling>
-int benchmark(bool CHStallOnDemand, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
-    if(CHStallOnDemand)
-        return benchmark<EHForwardStalling, EHBackwardStalling, true>(dijkstraRank, test, ehGraph, chQuery, queries);
+template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand>
+int benchmark(bool minimalSearchSpace, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+    if(minimalSearchSpace)
+        return benchmark<EHForwardStalling, EHBackwardStalling, CHStallOnDemand, true>(dijkstraRank, test, ehGraph, chQuery, queries);
     else
-        return benchmark<EHForwardStalling, EHBackwardStalling, false>(dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<EHForwardStalling, EHBackwardStalling, CHStallOnDemand, false>(dijkstraRank, test, ehGraph, chQuery, queries);
+}
+
+template<bool EHForwardStalling, bool EHBackwardStalling>
+int benchmark(bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+    if(CHStallOnDemand)
+        return benchmark<EHForwardStalling, EHBackwardStalling, true>(minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
+    else
+        return benchmark<EHForwardStalling, EHBackwardStalling, false>(minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
 }
 
 template<bool EHForwardStalling>
-int benchmark(bool EHBackwardStalling, bool CHStallOnDemand, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+int benchmark(bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
     if(EHBackwardStalling)
-        return benchmark<EHForwardStalling, true>(CHStallOnDemand, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<EHForwardStalling, true>(CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
     else
-        return benchmark<EHForwardStalling, false>(CHStallOnDemand, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<EHForwardStalling, false>(CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
 }
 
-int benchmark(bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+int benchmark(bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
     if(EHForwardStalling)
-        return benchmark<true>(EHBackwardStalling, CHStallOnDemand, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<true>(EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
     else
-        return benchmark<false>(EHBackwardStalling, CHStallOnDemand, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<false>(EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
 }
 
 
@@ -349,6 +415,10 @@ int main(int argc, char* argv[]) {
     bool CHNoStallOnDemand = false;
     cp.add_bool ("CHNoStallOnDemand", CHNoStallOnDemand,
                  "If this flag is set, Contraction Hierarchy queries will NOT use stall on demand");
+
+    bool minimalSearchSpace = false;
+    cp.add_bool ("minimalSearchSpace", minimalSearchSpace,
+                 "If this flag is set, the minimal search space will be calculated");
 
     bool test = false;
     cp.add_bool ("test", test,
@@ -447,6 +517,6 @@ int main(int argc, char* argv[]) {
         queries = GenerateRandomQueries(numQueries, seed, g);
     }
 
-    return benchmark(EHForwardStalling, EHBackwardStalling, CHStallOnDemand, dijkstraRank, test, newG, chQuery, queries);
+    return benchmark(EHForwardStalling, EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, newG, chQuery, queries);
 
 }
