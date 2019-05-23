@@ -267,7 +267,7 @@ int main(int argc, char* argv[]) {
     }
     g.sortEdges();
     EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
-    EdgeHierarchyQueryOnly newQuery = EdgeHierarchyQueryOnly(newG);
+    EdgeHierarchyQueryOnly<false, false> newQuery = EdgeHierarchyQueryOnly<false, false>(newG);
     newG.makeConsecutive();
 
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;

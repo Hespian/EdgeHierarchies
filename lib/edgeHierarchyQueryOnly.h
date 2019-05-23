@@ -21,6 +21,7 @@
 #define LOG_VERTICES_SETTLED false
 // #define USE_STALLING
 
+template <bool stallForward, bool stallBackward>
 class EdgeHierarchyQueryOnly {
 public:
     int numVerticesSettled;
@@ -38,13 +39,12 @@ public:
                                                              tentativeDistanceForward(g.getNumberOfNodes()),
                                                              tentativeDistanceBackward(g.getNumberOfNodes()),
                                                              rankForward(g.getNumberOfNodes()),
-                                                             rankBackward(g.getNumberOfNodes())
-#ifdef USE_STALLING
-                                                           ,actualDistanceForward(g.getNumberOfNodes()),
-                                                             actualDistanceBackward(g.getNumberOfNodes()),
-                                                             actualDistanceSetForward(g.getNumberOfNodes()),
-                                                             actualDistanceSetBackward(g.getNumberOfNodes())
-#endif
+                                                             rankBackward(g.getNumberOfNodes()),
+
+                                                             actualDistanceForward(stallForward ? g.getNumberOfNodes() : 0),
+                                                             actualDistanceBackward(stallForward ? g.getNumberOfNodes() : 0),
+                                                             actualDistanceSetForward(stallForward ? g.getNumberOfNodes() : 0),
+                                                             actualDistanceSetBackward(stallForward ? g.getNumberOfNodes() : 0)
     {
         numVerticesSettled = 0;
         numEdgesRelaxed = 0;
@@ -62,10 +62,10 @@ public:
         NODE_T t = g.getInternalNodeNumber(externalT);
         wasPushedForward.reset_all();
         wasPushedBackward.reset_all();
-#ifdef USE_STALLING
-        actualDistanceSetForward.reset_all();
-        actualDistanceSetBackward.reset_all();
-#endif
+        if constexpr(stallForward) {
+                actualDistanceSetForward.reset_all();
+                actualDistanceSetBackward.reset_all();
+            }
 
         popCount = 0;
 
@@ -137,7 +137,7 @@ public:
 protected:
 
     template<bool forward>
-    bool canStallAtNodeOld(NODE_T v) {
+    bool canStallAtNodeBackward(NODE_T v) {
         RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
 
@@ -164,9 +164,8 @@ protected:
         return result;
     }
 
-#ifdef USE_STALLING
     template<bool forward>
-    bool canStallAtNode(NODE_T v) {
+    bool canStallAtNodeForward(NODE_T v) {
         vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
         vector<EDGEWEIGHT_T> &actualDistanceCurrent = forward ? actualDistanceForward : actualDistanceBackward;
         RoutingKit::TimestampFlags &actualDistanceSetCurrent = forward ? actualDistanceSetForward : actualDistanceSetBackward;
@@ -176,7 +175,6 @@ protected:
             return false;
         }
     }
-#endif
 
     template<bool forward>
     void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength) {
@@ -186,10 +184,8 @@ protected:
         vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
         vector<EDGEWEIGHT_T> &tentativeDistanceOther = forward ? tentativeDistanceBackward : tentativeDistanceForward;
         vector<EDGERANK_T> &rankCurrent = forward ? rankForward : rankBackward;
-#ifdef USE_STALLING
         vector<EDGEWEIGHT_T> &actualDistanceCurrent = forward ? actualDistanceForward : actualDistanceBackward;
         RoutingKit::TimestampFlags &actualDistanceSetCurrent = forward ? actualDistanceSetForward : actualDistanceSetBackward;
-#endif
 
         auto popped = PQCurrent.pop();
 
@@ -199,11 +195,18 @@ protected:
 
         numVerticesSettled++;
 
-#ifdef USE_STALLING
-        if(canStallAtNode<forward>(u)) {
-            return;
+        if constexpr(stallForward){
+            if(canStallAtNodeForward<forward>(u)) {
+                return;
+            }
         }
-#endif
+
+        if constexpr(stallBackward){
+                if(canStallAtNodeBackward<forward>(u)) {
+                    return;
+                }
+            }
+
 
         if(LOG_VERTICES_SETTLED) {
             if(forward){
@@ -225,15 +228,18 @@ protected:
             const EDGEWEIGHT_T distanceV = distanceU + weight;
             if(wasPushedCurrent.is_set(v)) {
                 if(distanceV < tentativeDistanceCurrent[v]) {
-#ifdef USE_STALLING
-                    if(!actualDistanceSetCurrent.is_set(v) || distanceV < actualDistanceCurrent[v]) {
-#endif
+                    if constexpr(stallForward){
+                        if(!actualDistanceSetCurrent.is_set(v) || distanceV < actualDistanceCurrent[v]) {
+                            PQCurrent.decrease_key({v, distanceV});
+                            tentativeDistanceCurrent[v] = distanceV;
+                            rankCurrent[v] = rank;
+                        }
+                    }
+                    else {
                         PQCurrent.decrease_key({v, distanceV});
                         tentativeDistanceCurrent[v] = distanceV;
                         rankCurrent[v] = rank;
-#ifdef USE_STALLING
                     }
-#endif
 
                 }
                else if(distanceV == tentativeDistanceCurrent[v] && rankCurrent[v] < rank) {
@@ -248,12 +254,22 @@ protected:
             }
         };
 
-#ifdef USE_STALLING
-        auto stallFunc = [&] (const NODE_T v, const EDGERANK_T rank, const EDGEWEIGHT_T weight) {
-            ++numEdgesLookedAtForStalling;
-            EDGEWEIGHT_T const distanceV = distanceU + weight;
-            if(wasPushedCurrent.is_set(v)) {
-                if(tentativeDistanceCurrent[v] > distanceV) {
+        if constexpr(stallForward) {
+            auto stallFunc = [&] (const NODE_T v, const EDGERANK_T rank, const EDGEWEIGHT_T weight) {
+                ++numEdgesLookedAtForStalling;
+                EDGEWEIGHT_T const distanceV = distanceU + weight;
+                if(wasPushedCurrent.is_set(v)) {
+                    if(tentativeDistanceCurrent[v] > distanceV) {
+                        if(actualDistanceSetCurrent.is_set(v)) {
+                            if(actualDistanceCurrent[v] > distanceV) {
+                                actualDistanceCurrent[v] = distanceV;
+                            }
+                        } else {
+                            actualDistanceCurrent[v] = distanceV;
+                            actualDistanceSetCurrent.set(v);
+                        }
+                    }
+                } else {
                     if(actualDistanceSetCurrent.is_set(v)) {
                         if(actualDistanceCurrent[v] > distanceV) {
                             actualDistanceCurrent[v] = distanceV;
@@ -263,41 +279,31 @@ protected:
                         actualDistanceSetCurrent.set(v);
                     }
                 }
-            } else {
-                if(actualDistanceSetCurrent.is_set(v)) {
-                    if(actualDistanceCurrent[v] > distanceV) {
-                        actualDistanceCurrent[v] = distanceV;
-                    }
+            };
+
+            EDGERANK_T rankU = rankCurrent[u];
+            auto combinedFunc = [&] (NODE_T v, EDGERANK_T rank, EDGEWEIGHT_T weight) {
+                if(rank >= rankU) {
+                    relaxFunc(v, rank, weight);
                 } else {
-                    actualDistanceCurrent[v] = distanceV;
-                    actualDistanceSetCurrent.set(v);
+                    stallFunc(v, rank, weight);
                 }
-            }
-        };
+            };
 
-        EDGERANK_T rankU = rankCurrent[u];
-        auto combinedFunc = [&] (NODE_T v, EDGERANK_T rank, EDGEWEIGHT_T weight) {
-            if(rank >= rankU) {
-                relaxFunc(v, rank, weight);
-            } else {
-                stallFunc(v, rank, weight);
+            if constexpr(forward) {
+                g.forAllNeighborsOutWithRank(u, combinedFunc);
             }
-        };
-#endif
-
-        if(forward) {
-#ifdef USE_STALLING
-            g.forAllNeighborsOutWithRank(u, combinedFunc);
-#else
-            g.forAllNeighborsOutWithHighRank(u, rankCurrent[u], relaxFunc);
-#endif
+            else {
+                g.forAllNeighborsInWithRank(u, combinedFunc);
+            }
         }
         else {
-#ifdef USE_STALLING
-            g.forAllNeighborsInWithRank(u, combinedFunc);
-#else
-            g.forAllNeighborsInWithHighRank(u, rankCurrent[u], relaxFunc);
-#endif
+            if constexpr(forward) {
+                    g.forAllNeighborsOutWithHighRank(u, rankCurrent[u], relaxFunc);
+            }
+            else {
+                g.forAllNeighborsInWithHighRank(u, rankCurrent[u], relaxFunc);
+            }
         }
     }
 
@@ -310,10 +316,8 @@ protected:
     vector<EDGEWEIGHT_T> tentativeDistanceBackward;
     vector<EDGERANK_T> rankForward;
     vector<EDGERANK_T> rankBackward;
-#ifdef USE_STALLING
     vector<EDGEWEIGHT_T> actualDistanceForward;
     vector<EDGEWEIGHT_T> actualDistanceBackward;
     RoutingKit::TimestampFlags actualDistanceSetForward;
     RoutingKit::TimestampFlags actualDistanceSetBackward;
-#endif
 };
