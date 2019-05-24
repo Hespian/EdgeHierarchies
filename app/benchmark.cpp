@@ -447,8 +447,8 @@ int main(int argc, char* argv[]) {
     contractionHierarchyFilename += ".ch";
     EdgeHierarchyGraph g(0);
 
-    if(fileExists(edgeHierarchyFilename) && fileExists(contractionHierarchyFilename)) {
-        std::cout << "Skip reading graph file because both EH and CH are already on disk" << std::endl;
+    if(fileExists(edgeHierarchyFilename) && fileExists(contractionHierarchyFilename) && !dijkstraRank) {
+        std::cout << "Skip reading graph file because both EH and CH are already on disk and dijkstraRank is deactivated" << std::endl;
     }
     else {
         auto start = chrono::steady_clock::now();
@@ -472,6 +472,13 @@ int main(int argc, char* argv[]) {
 
             cout << "Turn cost graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
         }
+    }
+
+    std::vector<DijkstraRankRunningtime> queries;
+    if(dijkstraRank) {
+        queries = GenerateDijkstraRankQueries(numQueries, seed, g);
+    } else {
+        queries = GenerateRandomQueries(numQueries, seed, g);
     }
 
     RoutingKit::ContractionHierarchy ch;
@@ -510,12 +517,6 @@ int main(int argc, char* argv[]) {
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
     cout << "DFS ordered edge hierarchy graph has " << newG.getNumberOfNodes() << " vertices and " << newG.getNumberOfEdges() << " edges" << endl;
 
-    std::vector<DijkstraRankRunningtime> queries;
-    if(dijkstraRank) {
-        queries = GenerateDijkstraRankQueries(numQueries, seed, g);
-    } else {
-        queries = GenerateRandomQueries(numQueries, seed, g);
-    }
 
     return benchmark(EHForwardStalling, EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, newG, chQuery, queries);
 
