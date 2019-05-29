@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <random>
 #include <fstream>
+#include <pthread.h>
 
 #include <tlx/cmdline_parser.hpp>
 
@@ -33,6 +34,14 @@
 #include "edgeRanking/shortcutCountingRoundsEdgeRanker.h"
 #include "edgeRanking/shortcutCountingSortingRoundsEdgeRanker.h"
 #include "edgeRanking/levelShortcutsHopsEdgeRanker.h"
+
+void pin_to_core(size_t core)
+{
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(core, &cpuset);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+}
 
 bool fileExists (const std::string& name) {
     ifstream f(name.c_str());
@@ -379,6 +388,7 @@ int benchmark(bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDem
 
 
 int main(int argc, char* argv[]) {
+    pin_to_core(0);
     tlx::CmdlineParser cp;
 
     cp.set_description("Benchmark program for EdgeHierarchies");
