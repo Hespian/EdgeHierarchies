@@ -22,7 +22,7 @@ public:
     }
 
     EDGEID_T getEdgeId(NODE_T u, NODE_T v) {
-        EDGEID_T singeValueEdge = getSingeValueEdge(u, v);
+        auto singeValueEdge = getSingeValueEdge(u, v);
         if(edgeIdMapper.find(singeValueEdge) == edgeIdMapper.end()) {
             edgeIdMapper[singeValueEdge] = numEdges++;
             edges.push_back(std::make_pair(u, v));
@@ -38,7 +38,7 @@ public:
     }
 
 protected:
-    EDGEID_T getSingeValueEdge(NODE_T u, NODE_T v) {
+    uint64_t getSingeValueEdge(NODE_T u, NODE_T v) {
         // Cantor pairing function
         return (1.0/2) * (u + v) * (u + v + 1) + v;
     }
