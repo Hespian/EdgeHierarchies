@@ -486,8 +486,6 @@ int main(int argc, char* argv[]) {
 
         if(dijkstraRank) {
             queries = GenerateDijkstraRankQueries(numQueries, seed, g);
-        } else {
-            queries = GenerateRandomQueries(numQueries, seed, g);
         }
     }
 
@@ -528,9 +526,7 @@ int main(int argc, char* argv[]) {
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
     cout << "DFS ordered edge hierarchy graph has " << newG.getNumberOfNodes() << " vertices and " << newG.getNumberOfEdges() << " edges" << endl;
 
-    if(dijkstraRank) {
-        queries = GenerateDijkstraRankQueries(numQueries, seed, g);
-    } else {
+    if(!dijkstraRank) {
         queries = GenerateRandomQueries(numQueries, seed, g);
     }
 
