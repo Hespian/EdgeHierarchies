@@ -44,6 +44,6 @@ protected:
     }
 
     EDGEID_T numEdges;
-    google::sparse_hash_map<EDGEID_T, EDGEID_T> edgeIdMapper;
+    google::sparse_hash_map<uint64_t, EDGEID_T> edgeIdMapper;
     std::vector<std::pair<NODE_T, NODE_T>> edges;
 };
