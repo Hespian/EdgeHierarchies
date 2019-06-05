@@ -446,7 +446,7 @@ int main(int argc, char* argv[]) {
     if(addTurnCosts) {
         edgeHierarchyFilename += "Turncosts";
     }
-    edgeHierarchyFilename += "ShortcutCountingRoundsEdgeRanker";
+    edgeHierarchyFilename += "ShortcutCountingRoundsEdgeRankerCHForConstruction";
     edgeHierarchyFilename += ".eh";
 
 
@@ -511,6 +511,7 @@ int main(int argc, char* argv[]) {
 
     cout << "CH has " << ch.forward.first_out.back() + ch.backward.first_out.back() << " edges" << endl;
 
+    shortcutHelperChQuery = chQuery;
 
     if(fileExists(edgeHierarchyFilename)) {
         std::cout << "Edge Hierarchy already stored in file. Loading it..." << std::endl;

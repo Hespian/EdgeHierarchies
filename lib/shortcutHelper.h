@@ -13,7 +13,11 @@
 #include <cassert>
 #include <tuple>
 
+#include <routingkit/contraction_hierarchy.h>
+
 int numEquals = 0;
+
+RoutingKit::ContractionHierarchyQuery shortcutHelperChQuery;
 
 // first: shortest paths lost; second: edges to decrease
 template<bool returnEdgesToDecrease>
@@ -29,9 +33,11 @@ pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> 
                                                                              assert(vPrimeLevel == EDGERANK_INFINIY);
                                                                              EDGEWEIGHT_T uPrimeVPrimeWeight =
                                                                                      uPrimeVWeight + vPrimeWeight;
-                                                                             EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(
-                                                                                     uPrime, vPrime,
-                                                                                     uPrimeVPrimeWeight);
+                                                                             shortcutHelperChQuery.reset().add_source(uPrime).add_target(vPrime).run<true, false>();
+                                                                             auto distanceInQueryGraph = shortcutHelperChQuery.get_distance();
+                                                                             // EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(
+                                                                             //         uPrime, vPrime,
+                                                                             //         uPrimeVPrimeWeight);
 
                                                                              if(g.getEdgeRank(u, v) != EDGERANK_INFINIY - 1 && distanceInQueryGraph == uPrimeVPrimeWeight) {
                                                                                  ++numEquals;
