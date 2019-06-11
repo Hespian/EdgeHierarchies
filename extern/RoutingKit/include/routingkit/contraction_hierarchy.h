@@ -11,6 +11,7 @@
 #include <cassert>
 #include <type_traits>
 #include <limits.h>
+#include <stdint.h>
 
 namespace RoutingKit{
 
@@ -104,9 +105,9 @@ class ContractionHierarchyQuery{
 public:
     void resetCounters();
     void printCounters(int numQueries);
-    int getNumVerticesSettled();
-    int getNumEdgesRelaxed();
-    int getNumEdgesLookedAtForStalling();
+    uint64_t getNumVerticesSettled();
+    uint64_t getNumEdgesRelaxed();
+    uint64_t getNumEdgesLookedAtForStalling();
     std::vector<std::pair<unsigned, unsigned>> getVerticesSettledForward();
     std::vector<std::pair<unsigned, unsigned>> getVerticesSettledBackward();
 

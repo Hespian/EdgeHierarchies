@@ -15,9 +15,9 @@
 namespace RoutingKit{
 
 namespace{
-    int numVerticesSettled;
-    int numEdgesRelaxed;
-    int numEdgesLookedAtForStalling;
+    uint64_t numVerticesSettled;
+    uint64_t numEdgesRelaxed;
+    uint64_t numEdgesLookedAtForStalling;
     std::vector<std::pair<unsigned, unsigned>> verticesSettledForward;
     std::vector<std::pair<unsigned, unsigned>> verticesSettledBackward;
 
@@ -1620,15 +1620,15 @@ ContractionHierarchyQuery&ContractionHierarchyQuery::add_target(unsigned externa
                   << std::endl;
     }
 
-    int ContractionHierarchyQuery::getNumVerticesSettled() {
+    uint64_t ContractionHierarchyQuery::getNumVerticesSettled() {
         return numVerticesSettled;
     }
 
-    int ContractionHierarchyQuery::getNumEdgesRelaxed() {
+    uint64_t ContractionHierarchyQuery::getNumEdgesRelaxed() {
         return numEdgesRelaxed;
     }
 
-    int ContractionHierarchyQuery::getNumEdgesLookedAtForStalling() {
+    uint64_t ContractionHierarchyQuery::getNumEdgesLookedAtForStalling() {
         return numEdgesLookedAtForStalling;
     }
 

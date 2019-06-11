@@ -22,10 +22,10 @@
 template <bool stallForward, bool stallBackward, bool logVerticesSettled>
 class EdgeHierarchyQueryOnly {
 public:
-    int numVerticesSettled;
-    int numEdgesRelaxed;
-    int numEdgesLookedAtForStalling;
-    int popCount;
+    uint64_t numVerticesSettled;
+    uint64_t numEdgesRelaxed;
+    uint64_t numEdgesLookedAtForStalling;
+    uint64_t popCount;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledForward;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledBackward;
 
