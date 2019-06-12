@@ -228,7 +228,7 @@ public:
                                 NODE_T vNew = nodeBegin[v] + vNeighborCounter;
                                 EDGEWEIGHT_T newWeight = originalWeight;
                                 if(x == u) {
-                                    newWeight += 100;
+                                    newWeight += 1000;
                                 }
                                 result.addEdge(uNew, vNew, newWeight);
                                 ++vNeighborCounter;
