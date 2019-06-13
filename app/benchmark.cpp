@@ -442,6 +442,10 @@ int main(int argc, char* argv[]) {
     cp.add_bool ("test", test,
                  "If this flag is set, correctness will be checked");
 
+    bool rebuild = false;
+    cp.add_bool ("rebuild", rebuild,
+                 "If this flag is set, CH and EH are rebuilt");
+
     // process command line
     if (!cp.process(argc, argv))
         return -1; // some error occurred and help was always written to user.
@@ -471,7 +475,7 @@ int main(int argc, char* argv[]) {
     EdgeHierarchyGraph g(0);
 
     std::vector<DijkstraRankRunningtime> queries;
-    if(fileExists(edgeHierarchyFilename) && fileExists(contractionHierarchyFilename) && !dijkstraRank) {
+    if(!rebuild && fileExists(edgeHierarchyFilename) && fileExists(contractionHierarchyFilename) && !dijkstraRank) {
         std::cout << "Skip reading graph file because both EH and CH are already on disk and dijkstraRank is deactivated" << std::endl;
     }
     else {
@@ -504,7 +508,7 @@ int main(int argc, char* argv[]) {
 
 
     RoutingKit::ContractionHierarchy ch;
-    if(fileExists(contractionHierarchyFilename)) {
+    if(!rebuild && fileExists(contractionHierarchyFilename)) {
         std::cout << "Contraction Hierarchy already stored in file. Loading it..." << std::endl;
         ch = RoutingKit::ContractionHierarchy::load_file(contractionHierarchyFilename);
     }
@@ -526,7 +530,7 @@ int main(int argc, char* argv[]) {
 
     shortcutHelperChQuery = chQuery;
 
-    if(fileExists(edgeHierarchyFilename)) {
+    if(!rebuild && fileExists(edgeHierarchyFilename)) {
         std::cout << "Edge Hierarchy already stored in file. Loading it..." << std::endl;
         g = readEdgeHierarchy(edgeHierarchyFilename);
     }
