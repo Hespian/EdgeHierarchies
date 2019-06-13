@@ -207,7 +207,7 @@ public:
         edgesSorted = true;
     }
 
-    EdgeHierarchyGraph getTurnCostGraph() {
+    EdgeHierarchyGraph getTurnCostGraph(unsigned uTurnCost) {
         std::vector<EDGEID_T> outDegree(n + 1);
         outDegree[0] = 0;
         forAllNodes([&] (NODE_T v) {
@@ -228,7 +228,7 @@ public:
                                 NODE_T vNew = nodeBegin[v] + vNeighborCounter;
                                 EDGEWEIGHT_T newWeight = originalWeight;
                                 if(x == u) {
-                                    newWeight += 1000;
+                                    newWeight += uTurnCost;
                                 }
                                 result.addEdge(uNew, vNew, newWeight);
                                 ++vNeighborCounter;

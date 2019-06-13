@@ -410,6 +410,10 @@ int main(int argc, char* argv[]) {
     cp.add_bool ('t', "turnCosts", addTurnCosts,
                  "If this flag is set, turn costs are added to the input graph.");
 
+    unsigned uTurnCost = 1000;
+    cp.add_unsigned('u', "uTurnCost", uTurnCost,
+                    "Cost to be added for u-turns (only has effect when turn costs are activated).");
+
     bool useCHForEHConstruction = false;
     cp.add_bool ("useCH", useCHForEHConstruction,
                  "If this flag is set, CH queries will be used during EH construction");
@@ -450,7 +454,7 @@ int main(int argc, char* argv[]) {
 
     std::string edgeHierarchyFilename = filename;
     if(addTurnCosts) {
-        edgeHierarchyFilename += "Turncosts";
+        edgeHierarchyFilename += "Turncosts" + std::to_string(uTurnCost);
     }
     edgeHierarchyFilename += "ShortcutCountingRoundsEdgeRanker";
     if(useCHForEHConstruction) {
@@ -461,7 +465,7 @@ int main(int argc, char* argv[]) {
 
     std::string contractionHierarchyFilename = filename;
     if(addTurnCosts) {
-        contractionHierarchyFilename += "Turncosts";
+        contractionHierarchyFilename += "Turncosts" + std::to_string(uTurnCost);
     }
     contractionHierarchyFilename += ".ch";
     EdgeHierarchyGraph g(0);
@@ -483,7 +487,7 @@ int main(int argc, char* argv[]) {
 
         if(addTurnCosts){
             start = chrono::steady_clock::now();
-            g = g.getTurnCostGraph();
+            g = g.getTurnCostGraph(uTurnCost);
             end = chrono::steady_clock::now();
 
             cout << "Adding turn costs took "
