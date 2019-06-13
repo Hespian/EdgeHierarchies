@@ -410,6 +410,10 @@ int main(int argc, char* argv[]) {
     cp.add_bool ('t', "turnCosts", addTurnCosts,
                  "If this flag is set, turn costs are added to the input graph.");
 
+    bool useCHForEHConstruction = false;
+    cp.add_bool ("useCH", useCHForEHConstruction,
+                 "If this flag is set, CH queries will be used during EH construction");
+
     bool dijkstraRank = false;
     cp.add_bool ('d', "dijkstraRank", dijkstraRank,
                  "If this flag is set, queries are generated for dijkstra ranks of powers of two with numQueries source vertices.");
@@ -442,11 +446,16 @@ int main(int argc, char* argv[]) {
 
     bool CHStallOnDemand = !CHNoStallOnDemand;
 
+    shortcutHelperUseCH = useCHForEHConstruction;
+
     std::string edgeHierarchyFilename = filename;
     if(addTurnCosts) {
         edgeHierarchyFilename += "Turncosts";
     }
-    edgeHierarchyFilename += "ShortcutCountingRoundsEdgeRankerCHForConstruction";
+    edgeHierarchyFilename += "ShortcutCountingRoundsEdgeRanker";
+    if(useCHForEHConstruction) {
+        edgeHierarchyFilename += "CHForConstruction";
+    }
     edgeHierarchyFilename += ".eh";
 
 

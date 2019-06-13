@@ -17,6 +17,7 @@
 
 int numEquals = 0;
 
+bool shortcutHelperUseCH;
 RoutingKit::ContractionHierarchyQuery shortcutHelperChQuery;
 
 // first: shortest paths lost; second: edges to decrease
@@ -33,11 +34,16 @@ pair<vector<pair<NODE_T, NODE_T>>, vector<tuple<NODE_T, NODE_T, EDGEWEIGHT_T>>> 
                                                                              assert(vPrimeLevel == EDGERANK_INFINIY);
                                                                              EDGEWEIGHT_T uPrimeVPrimeWeight =
                                                                                      uPrimeVWeight + vPrimeWeight;
-                                                                             shortcutHelperChQuery.reset().add_source(uPrime).add_target(vPrime).run<true, false>();
-                                                                             auto distanceInQueryGraph = shortcutHelperChQuery.get_distance();
-                                                                             // EDGEWEIGHT_T distanceInQueryGraph = query.getDistance(
-                                                                             //         uPrime, vPrime,
-                                                                             //         uPrimeVPrimeWeight);
+                                                                             EDGEWEIGHT_T distanceInQueryGraph;
+                                                                             if(shortcutHelperUseCH) {
+                                                                                 shortcutHelperChQuery.reset().add_source(uPrime).add_target(vPrime).run<true, false>();
+                                                                                 distanceInQueryGraph = shortcutHelperChQuery.get_distance();
+                                                                             }
+                                                                             else {
+                                                                                 distanceInQueryGraph = query.getDistance(
+                                                                                                                          uPrime, vPrime,
+                                                                                                                          uPrimeVPrimeWeight);
+                                                                             }
 
                                                                              if(g.getEdgeRank(u, v) != EDGERANK_INFINIY - 1 && distanceInQueryGraph == uPrimeVPrimeWeight) {
                                                                                  ++numEquals;
