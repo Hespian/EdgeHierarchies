@@ -35,7 +35,7 @@ public:
 
     void addEdge(NODE_T u, NODE_T v) {
         EDGEID_T edgeId = edgeIdCreator.getEdgeId(u, v);
-        if(edgeId > PQ.id_count()) {
+        if(edgeId >= PQ.id_count()) {
             increaseCapacity(2 * edgeId);
         }
 
