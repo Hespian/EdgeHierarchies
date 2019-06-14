@@ -43,6 +43,6 @@ EdgeHierarchyGraph readEdgeHierarchy(string fileName) {
         }
     }
 
-    return g;
     infile.close();
+    return g;
 }
