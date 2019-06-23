@@ -86,6 +86,9 @@ def buildGraph(graphPath, turnCosts, time):
 
     command = os.path.join(dir_path, "../build/app/benchmark") + " " + graphPath + " -q " + str(numQueries) + " --rebuild"
 
+    if graphName.startswith("scc"):
+        command += " --useCH"
+
     if turnCosts:
         command += " -t -u " + str(uTurnCost)
 
