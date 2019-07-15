@@ -135,13 +135,13 @@ public:
 protected:
 
     template<bool forward>
-    bool canStallAtNodeBackward(NODE_T v) {
-        RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
-        vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
+    bool canStallAtNodeBackward(const NODE_T v) {
+        const RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
+        const vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
 
         bool result = false;
 
-        auto stallCheckFunc = [&] (NODE_T u, EDGEWEIGHT_T weight) {
+        auto stallCheckFunc = [&] (const NODE_T u, const EDGEWEIGHT_T weight) {
             ++numEdgesLookedAtForStalling;
             if(wasPushedCurrent.is_set(u)) {
                 EDGEWEIGHT_T distanceV = tentativeDistanceCurrent[u] + weight;
@@ -185,10 +185,10 @@ protected:
         vector<EDGEWEIGHT_T> &actualDistanceCurrent = forward ? actualDistanceForward : actualDistanceBackward;
         RoutingKit::TimestampFlags &actualDistanceSetCurrent = forward ? actualDistanceSetForward : actualDistanceSetBackward;
 
-        auto popped = PQCurrent.pop();
+        const auto popped = PQCurrent.pop();
 
-        NODE_T u = popped.id;
-        EDGERANK_T distanceU = popped.key;
+        const NODE_T u = popped.id;
+        const EDGERANK_T distanceU = popped.key;
         assert(distanceU == tentativeDistanceCurrent[u]);
 
         numVerticesSettled++;
