@@ -418,6 +418,10 @@ int main(int argc, char* argv[]) {
     cp.add_bool ("useCH", useCHForEHConstruction,
                  "If this flag is set, CH queries will be used during EH construction");
 
+    bool DFSPreOrder = false;
+    cp.add_bool ("DFSPreOrder", DFSPreOrder,
+                 "If this flag is set, DFS ordering will use pre order instead of post order");
+
     bool dijkstraRank = false;
     cp.add_bool ('d', "dijkstraRank", dijkstraRank,
                  "If this flag is set, queries are generated for dijkstra ranks of powers of two with numQueries source vertices.");
@@ -539,7 +543,13 @@ int main(int argc, char* argv[]) {
         buildAndWriteEdgeHierarchy<ShortcutCountingRoundsEdgeRanker>(g, edgeHierarchyFilename);
     }
     g.sortEdges();
-    EdgeHierarchyGraphQueryOnly newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly>();
+    EdgeHierarchyGraphQueryOnly newG(0);
+    if(DFSPreOrder) {
+        newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly, true>();
+    }
+    else {
+        newG = g.getDFSOrderGraph<EdgeHierarchyGraphQueryOnly, false>();
+    }
     newG.makeConsecutive();
     cout << "Edge hierarchy graph has " << g.getNumberOfNodes() << " vertices and " << g.getNumberOfEdges() << " edges" << endl;
     cout << "DFS ordered edge hierarchy graph has " << newG.getNumberOfNodes() << " vertices and " << newG.getNumberOfEdges() << " edges" << endl;

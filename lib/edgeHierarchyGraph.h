@@ -241,7 +241,7 @@ public:
 
     }
 
-    template<typename T>
+    template<typename T, bool preOrder>
     T getDFSOrderGraph() {
         auto result = T(n);
 
@@ -267,11 +267,18 @@ public:
                 NODE_T v = stack.back();
                 if(marks[v]) {
                     stack.pop_back();
-                    if(dfsNum[v] == NODE_INVALID) {
-                        dfsNum[v] = dfsCount++;
-                    }
+                    if constexpr(!preOrder) {
+                            if(dfsNum[v] == NODE_INVALID) {
+                                dfsNum[v] = dfsCount++;
+                            }
+                        }
                 } else {
                     marks[v] = true;
+                    if constexpr(preOrder) {
+                            if(dfsNum[v] == NODE_INVALID) {
+                                dfsNum[v] = dfsCount++;
+                            }
+                        }
                     for(int i = neighborsOut[v].size() - 1; i >=0; --i) {
                         NODE_T w = neighborsOut[v][i].neighbor;
                         if(!marks[w]) {
