@@ -32,6 +32,7 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/lib
   ${PROJECT_SOURCE_DIR}/extern/RoutingKit/include
   ${PROJECT_SOURCE_DIR}/extern/tlx
+  ${PROJECT_SOURCE_DIR}/extern/lorenz
   )
 
 #descend into tlx

@@ -22,6 +22,8 @@
 #include <routingkit/dijkstra.h>
 #include <routingkit/inverse_vector.h>
 
+#include <papi.hpp>
+
 #include "definitions.h"
 #include "edgeHierarchyGraph.h"
 #include "edgeHierarchyQuery.h"
@@ -215,6 +217,7 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
 
     int numVerticesSettledWithActualDistance = 0;
     newQuery.resetCounters();
+    auto cache_counter_eh = common::papi_cache();
     auto start = chrono::steady_clock::now();
     for(auto &generatedQuery: queries) {
         NODE_T u = generatedQuery.source;
@@ -256,6 +259,8 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
             }
         }
     }
+    cache_counter_eh.stop();
+    std::cout << cache_counter_eh.result() << std::endl;
 	auto end = chrono::steady_clock::now();
 
     if(!dijkstraRank) {
@@ -281,6 +286,7 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
     numVerticesSettledWithActualDistance = 0;
     chQuery.resetCounters();
     start = chrono::steady_clock::now();
+    auto cache_counter_ch = common::papi_cache();
     for(auto &generatedQuery: queries) {
         NODE_T u = generatedQuery.source;
         NODE_T v = generatedQuery.target;
@@ -322,6 +328,8 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
             }
         }
     }
+    cache_counter_ch.stop();
+    std::cout << cache_counter_ch.result() << std::endl;
     end = chrono::steady_clock::now();
 
     if(!dijkstraRank) {
