@@ -260,8 +260,8 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
         }
     }
     cache_counter_eh.stop();
-    std::cout << cache_counter_eh.result() << std::endl;
 	auto end = chrono::steady_clock::now();
+    std::cout << cache_counter_eh.result() << std::endl;
 
     if(!dijkstraRank) {
         cout << "Average query time (EH): "
@@ -329,8 +329,8 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
         }
     }
     cache_counter_ch.stop();
-    std::cout << cache_counter_ch.result() << std::endl;
     end = chrono::steady_clock::now();
+    std::cout << cache_counter_ch.result() << std::endl;
 
     if(!dijkstraRank) {
         cout << "Average query time (CH): "
