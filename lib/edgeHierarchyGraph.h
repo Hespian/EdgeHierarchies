@@ -241,6 +241,26 @@ public:
 
     }
 
+    template<typename T>
+    T getReorderedGraph(std::vector<NODE_T> perm) {
+        if(perm.size() != n) {
+            std::cout << "Error! given order has wrong size!" << std::endl;
+            exit(1);
+        }
+        auto result = T(n);
+
+
+        forAllNodes([&] (NODE_T v) {
+                forAllNeighborsOut(v, [&] (NODE_T w, EDGEWEIGHT_T weight) {
+                        result.addEdge(perm[v], perm[w], weight);
+                        result.setEdgeRank(perm[v], perm[w], getEdgeRank(v, w));
+                    });
+            });
+        result.setNodeMap(perm);
+
+        return result;
+    }
+
     template<typename T, bool preOrder>
     T getDFSOrderGraph() {
         auto result = T(n);
