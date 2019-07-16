@@ -48,6 +48,12 @@ public:
         return os << describe_event(events[component]) << ": " << counters[component];
     }
 
+    void compareTo(const papi_result &other) {
+        std::cout << describe_event(events[0]) << ": " << (other.counters[0] - counters[0])/(1.0 * other.counters[0]) << "; " << std::endl
+                  << describe_event(events[1]) << ": " << (other.counters[1] - counters[1])/(1.0 * other.counters[1]) << "; " << std::endl
+                  << describe_event(events[2]) << ": " << (other.counters[2] - counters[2])/(1.0 * other.counters[2]) << "." << std::endl;
+    }
+
     friend std::ostream& operator<<(std::ostream &os, const papi_result &res) {
         return res.print(os);
     }

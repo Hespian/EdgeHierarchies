@@ -360,6 +360,8 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
         }
     }
 
+    cache_counter_ch.result().compareTo(cache_counter_eh.result());
+
     return numMistakes;
 }
 
