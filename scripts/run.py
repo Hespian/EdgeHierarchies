@@ -115,7 +115,8 @@ def runGraphAll(graphName, _time, withDijkstra=False, stalling=False):
         runGraph(graphPath, turnCosts=True, time=_time, dijkstra=True)
 
     if stalling:
-        runGraph(graphPath, turnCosts=True, time=_time, dijkstra=False, EHForwardStalling=False, EHBackwardStalling=False, CHNoStallOnDemand=True, minimalSearchSpace=True)
+        runGraph(graphPath, turnCosts=True, time=_time, dijkstra=False, EHForwardStalling=False, EHBackwardStalling=True, CHNoStallOnDemand=False, minimalSearchSpace=True)
+        runGraph(graphPath, turnCosts=True, time=_time, dijkstra=False, EHForwardStalling=False, EHBackwardStalling=False, CHNoStallOnDemand=True, minimalSearchSpace=False)
         runGraph(graphPath, turnCosts=True, time=_time, dijkstra=False, EHForwardStalling=True, EHBackwardStalling=False, CHNoStallOnDemand=False, minimalSearchSpace=False)
         runGraph(graphPath, turnCosts=True, time=_time, dijkstra=False, EHForwardStalling=False, EHBackwardStalling=True, CHNoStallOnDemand=False, minimalSearchSpace=False)
 
