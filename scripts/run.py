@@ -12,7 +12,7 @@ commitId = subprocess.check_output(["git", "describe", "--always"]).strip().deco
 resultsDir = os.path.join(str(dir_path), "../results", str(commitId))
 os.makedirs(resultsDir, exist_ok=True)
 
-def runGraph(graphPath, turnCosts, time, dijkstra, EHForwardStalling=False, EHBackwardStalling=False, CHNoStallOnDemand=False, minimalSearchSpace=False):
+def runGraph(graphPath, turnCosts, time, dijkstra, EHForwardStalling=False, EHBackwardStalling=False, CHNoStallOnDemand=False, minimalSearchSpace=False, DFSPreOrder=True):
     graphName = os.path.basename(graphPath)
     resultsFile = os.path.join(resultsDir, graphName)
     if turnCosts :
@@ -42,6 +42,10 @@ def runGraph(graphPath, turnCosts, time, dijkstra, EHForwardStalling=False, EHBa
 
     if dijkstra:
         command += " -d"
+
+    if DFSPreOrder:
+        command += " --DFSPreOrder"
+        resultsFile += "DFSPreOrder"
 
     if EHForwardStalling :
         command += " --EHForwardStalling"
