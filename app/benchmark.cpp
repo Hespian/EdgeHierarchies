@@ -29,6 +29,7 @@
 #include "edgeHierarchyQuery.h"
 #include "edgeHierarchyGraphQueryOnly.h"
 #include "edgeHierarchyQueryOnly.h"
+#include "edgeHierarchyQueryOnlyNoTimestamp.h"
 #include "edgeHierarchyConstruction.h"
 #include "dimacsGraphReader.h"
 #include "edgeHierarchyWriter.h"
@@ -172,10 +173,19 @@ std::vector<DijkstraRankRunningtime> GenerateRandomQueries(unsigned numQueries, 
     return result;
 }
 
-template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace>
+template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace, template<bool, bool, bool> class QueryType>
 int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
-    EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, minimalSearchSpace> newQuery = EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, minimalSearchSpace>(ehGraph);
+    QueryType<EHForwardStalling, EHBackwardStalling, minimalSearchSpace> newQuery = QueryType<EHForwardStalling, EHBackwardStalling, minimalSearchSpace>(ehGraph);
+    // EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, minimalSearchSpace> newQuery = EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, minimalSearchSpace>(ehGraph);
 
+    std::cout << "Running benchmark" << std::endl;
+    std::cout << "EHForwardStalling: " << EHForwardStalling << std::endl;
+    std::cout << "EHBackwardStalling: " << EHBackwardStalling << std::endl;
+    std::cout << "CHStallOnDemand: " << CHStallOnDemand << std::endl;
+    std::cout << "minimalSearchSpace: " << minimalSearchSpace << std::endl;
+    std::cout << "QueryType: " << typeid(newQuery).name() << std::endl;
+    std::cout << "dijkstraRank: " << dijkstraRank << std::endl;
+    std::cout << "test: " << test << std::endl;
 
     int numMistakes = 0;
     int numCorrect = 0;
@@ -365,35 +375,43 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
     return numMistakes;
 }
 
-template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand>
-int benchmark(bool minimalSearchSpace, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
-    if(minimalSearchSpace)
-        return benchmark<EHForwardStalling, EHBackwardStalling, CHStallOnDemand, true>(dijkstraRank, test, ehGraph, chQuery, queries);
+template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace>
+int benchmark(bool dijkstraRank, bool test, bool noTimestamp, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+    if(noTimestamp)
+        return benchmark<EHForwardStalling, EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, EdgeHierarchyQueryOnlyNoTimestamp>(dijkstraRank, test, ehGraph, chQuery, queries);
     else
-        return benchmark<EHForwardStalling, EHBackwardStalling, CHStallOnDemand, false>(dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<EHForwardStalling, EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, EdgeHierarchyQueryOnly>(dijkstraRank, test, ehGraph, chQuery, queries);
+}
+
+template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand>
+int benchmark(bool minimalSearchSpace, bool dijkstraRank, bool test, bool noTimestamp, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+    if(minimalSearchSpace)
+        return benchmark<EHForwardStalling, EHBackwardStalling, CHStallOnDemand, true>(dijkstraRank, test, noTimestamp, ehGraph, chQuery, queries);
+    else
+        return benchmark<EHForwardStalling, EHBackwardStalling, CHStallOnDemand, false>(dijkstraRank, test, noTimestamp, ehGraph, chQuery, queries);
 }
 
 template<bool EHForwardStalling, bool EHBackwardStalling>
-int benchmark(bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+int benchmark(bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, bool noTimestamp, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
     if(CHStallOnDemand)
-        return benchmark<EHForwardStalling, EHBackwardStalling, true>(minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<EHForwardStalling, EHBackwardStalling, true>(minimalSearchSpace, dijkstraRank, test, noTimestamp, ehGraph, chQuery, queries);
     else
-        return benchmark<EHForwardStalling, EHBackwardStalling, false>(minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<EHForwardStalling, EHBackwardStalling, false>(minimalSearchSpace, dijkstraRank, test, noTimestamp, ehGraph, chQuery, queries);
 }
 
 template<bool EHForwardStalling>
-int benchmark(bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+int benchmark(bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, bool noTimestamp, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
     if(EHBackwardStalling)
-        return benchmark<EHForwardStalling, true>(CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<EHForwardStalling, true>(CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, ehGraph, chQuery, queries);
     else
-        return benchmark<EHForwardStalling, false>(CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<EHForwardStalling, false>(CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, ehGraph, chQuery, queries);
 }
 
-int benchmark(bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
+int benchmark(bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace, bool dijkstraRank, bool test, bool noTimestamp, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries) {
     if(EHForwardStalling)
-        return benchmark<true>(EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<true>(EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, ehGraph, chQuery, queries);
     else
-        return benchmark<false>(EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, ehGraph, chQuery, queries);
+        return benchmark<false>(EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, ehGraph, chQuery, queries);
 }
 
 
@@ -435,6 +453,10 @@ int main(int argc, char* argv[]) {
     bool CHOrder = false;
     cp.add_bool ("CHOrder", CHOrder,
                  "If this flag is set, EHs will use the node ordering from CHs");
+
+    bool noTimestamp = false;
+    cp.add_bool ("noTimestamp", noTimestamp,
+                 "If this flag is set, EH queries will not use timestamp flags but instead reset all distances set after each query");
 
     bool dijkstraRank = false;
     cp.add_bool ('d', "dijkstraRank", dijkstraRank,
@@ -579,6 +601,6 @@ int main(int argc, char* argv[]) {
     }
 
 
-    return benchmark(EHForwardStalling, EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, newG, chQuery, queries);
+    return benchmark(EHForwardStalling, EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, newG, chQuery, queries);
 
 }
