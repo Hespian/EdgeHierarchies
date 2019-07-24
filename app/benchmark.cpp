@@ -281,7 +281,10 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
                 auto& newQuery = queryObjects[threadNum];
                 auto& chQuery = CHQueryObjects[threadNum];
                 newQuery.resetCounters();
-                auto cache_counter_eh =common::papi_cache();
+                auto cache_counter_eh =common::papi_cache(false);
+                if(threadNum == 0) {
+                    cache_counter_eh.start();
+                }
                 for(unsigned i = threadStart[threadNum]; i < threadStart[threadNum + 1]; ++i) {
                     auto &generatedQuery = queries[i];
                     NODE_T u = generatedQuery.source;
@@ -324,8 +327,8 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
                             }
                         }
                 }
-                cache_counter_eh.stop();
                 if(threadNum == 0) {
+                    cache_counter_eh.stop();
                     cache_result_eh = cache_counter_eh.result();
                 }
 
@@ -367,7 +370,10 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
     for (unsigned i = 0; i < numThreads; ++i) {
         threads[i] = std::thread([&] (int threadNum) {
                 pin_to_core(threadNum);
-                auto cache_counter_ch = common::papi_cache();
+                auto cache_counter_ch = common::papi_cache(false);
+                if(threadNum == 0) {
+                    cache_counter_ch.start();
+                }
                 auto& newQuery = queryObjects[threadNum];
                 auto& chQuery = CHQueryObjects[threadNum];
                 newQuery.resetCounters();
@@ -414,8 +420,8 @@ int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph
                             }
                         }
                 }
-                cache_counter_ch.stop();
                 if(threadNum == 0) {
+                    cache_counter_ch.stop();
                     cache_result_ch = cache_counter_ch.result();
                 }
             }, i);
