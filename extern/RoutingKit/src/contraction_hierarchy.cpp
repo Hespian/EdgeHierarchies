@@ -1649,7 +1649,7 @@ namespace{
 		const SetPred&set_predecessor
 	){
 		for(unsigned arc = forward_first_out[node]; arc < forward_first_out[node+1]; ++arc){
-            ++numEdgesRelaxed;
+            // ++numEdgesRelaxed;
 			unsigned h = forward_head[arc], d = distance_to_node + forward_weight[arc];
 			if(was_forward_pushed.is_set(h)){
 				if(d < forward_tentative_distance[h]){
@@ -1674,7 +1674,7 @@ namespace{
 	){
         // return false;
 		for(unsigned arc = backward_first_out[node]; arc < backward_first_out[node+1]; ++arc){
-            ++numEdgesLookedAtForStalling;
+            // ++numEdgesLookedAtForStalling;
 			unsigned x = backward_head[arc];
 			if(was_forward_pushed.is_set(x)){
 				if(forward_tentative_distance[x] + backward_weight[arc] <= forward_tentative_distance[node])
@@ -1697,7 +1697,7 @@ namespace{
 	){
 
 
-        ++numVerticesSettled;
+        // ++numVerticesSettled;
 		auto p = forward_queue.pop();
 		auto popped_node = p.id;
 		auto distance_to_popped_node = p.key;
