@@ -55,7 +55,7 @@ public:
         numEdgesLookedAtForStalling = 0;
     }
 
-    EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT, float stallingFraction) {
+    EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT, float stallingPercent) {
         NODE_T s = g.getInternalNodeNumber(externalS);
         NODE_T t = g.getInternalNodeNumber(externalT);
         wasPushedForward.reset_all();
@@ -116,10 +116,10 @@ public:
             }
 
             if(forward) {
-                makeStep<true>(shortestPathMeetingNode, shortestPathLength, stallingFraction);
+                makeStep<true>(shortestPathMeetingNode, shortestPathLength, stallingPercent);
             }
             else {
-                makeStep<false>(shortestPathMeetingNode, shortestPathLength, stallingFraction);
+                makeStep<false>(shortestPathMeetingNode, shortestPathLength, stallingPercent);
             }
             forward = !forward;
             // TODO: Why is this wrong?
@@ -135,7 +135,7 @@ public:
 protected:
 
     template<bool forward>
-    bool canStallAtNodeBackward(const NODE_T v, float fraction) {
+    bool canStallAtNodeBackward(const NODE_T v, int percent) {
         const RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         const vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
 
@@ -154,10 +154,10 @@ protected:
         };
 
         if(forward) {
-            g.forAllNeighborsInAndStop(v, stallCheckFunc, fraction);
+            g.forAllNeighborsInAndStop(v, stallCheckFunc, percent);
         }
         else {
-            g.forAllNeighborsOutAndStop(v, stallCheckFunc, fraction);
+            g.forAllNeighborsOutAndStop(v, stallCheckFunc, percent);
         }
         return result;
     }
@@ -175,7 +175,7 @@ protected:
     }
 
     template<bool forward>
-    void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength, float stallingFraction) {
+    void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength, float stallingPercent) {
         RoutingKit::MinIDQueue &PQCurrent = forward ? PQForward : PQBackward;
         RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         RoutingKit::TimestampFlags &wasPushedOther = forward ? wasPushedBackward : wasPushedForward;
@@ -200,7 +200,7 @@ protected:
         }
 
         if constexpr(stallBackward){
-                if(canStallAtNodeBackward<forward>(u, stallingFraction)) {
+                if(canStallAtNodeBackward<forward>(u, stallingPercent)) {
                     return;
                 }
             }
