@@ -55,7 +55,7 @@ public:
         numEdgesLookedAtForStalling = 0;
     }
 
-    EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT) {
+    EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT, float stallingFraction) {
         NODE_T s = g.getInternalNodeNumber(externalS);
         NODE_T t = g.getInternalNodeNumber(externalT);
         wasPushedForward.reset_all();
@@ -116,10 +116,10 @@ public:
             }
 
             if(forward) {
-                makeStep<true>(shortestPathMeetingNode, shortestPathLength);
+                makeStep<true>(shortestPathMeetingNode, shortestPathLength, stallingFraction);
             }
             else {
-                makeStep<false>(shortestPathMeetingNode, shortestPathLength);
+                makeStep<false>(shortestPathMeetingNode, shortestPathLength, stallingFraction);
             }
             forward = !forward;
             // TODO: Why is this wrong?
@@ -135,7 +135,7 @@ public:
 protected:
 
     template<bool forward>
-    bool canStallAtNodeBackward(const NODE_T v) {
+    bool canStallAtNodeBackward(const NODE_T v, float fraction) {
         const RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         const vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
 
@@ -154,10 +154,10 @@ protected:
         };
 
         if(forward) {
-            g.forAllNeighborsInAndStop(v, stallCheckFunc);
+            g.forAllNeighborsInAndStop(v, stallCheckFunc, fraction);
         }
         else {
-            g.forAllNeighborsOutAndStop(v, stallCheckFunc);
+            g.forAllNeighborsOutAndStop(v, stallCheckFunc, fraction);
         }
         return result;
     }
@@ -175,7 +175,7 @@ protected:
     }
 
     template<bool forward>
-    void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength) {
+    void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength, float stallingFraction) {
         RoutingKit::MinIDQueue &PQCurrent = forward ? PQForward : PQBackward;
         RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         RoutingKit::TimestampFlags &wasPushedOther = forward ? wasPushedBackward : wasPushedForward;
@@ -194,13 +194,13 @@ protected:
         numVerticesSettled++;
 
         if constexpr(stallForward){
-            if(canStallAtNodeForward<forward>(u)) {
+                if(canStallAtNodeForward<forward>(u)) {
                 return;
             }
         }
 
         if constexpr(stallBackward){
-                if(canStallAtNodeBackward<forward>(u)) {
+                if(canStallAtNodeBackward<forward>(u, stallingFraction)) {
                     return;
                 }
             }
