@@ -84,8 +84,8 @@ public:
 
 
     template<typename F>
-    void forAllNeighborsInAndStop(NODE_T v, F &&callback) {
-        const size_t end = inBegin[v] + (((inBegin[v + 1] - inBegin[v]))/10);
+    void forAllNeighborsInAndStop(NODE_T v, F &&callback, int percent) {
+        const size_t end = inBegin[v] + (((inBegin[v + 1] - inBegin[v]) * percent)/100);
         for(size_t i = inBegin[v]; i < end; ++i) {
 #if GROUP_EDGES
             bool stop = callback(inEdges[i].neighbor, inEdges[i].weight);
@@ -99,8 +99,8 @@ public:
     }
 
     template<typename F>
-    void forAllNeighborsOutAndStop(NODE_T v, F &&callback) {
-        const size_t end = outBegin[v] + (((outBegin[v + 1] - outBegin[v]))/10);
+    void forAllNeighborsOutAndStop(NODE_T v, F &&callback, int percent) {
+        const size_t end = outBegin[v] + (((outBegin[v + 1] - outBegin[v]) * percent)/100);
         for(size_t i = outBegin[v]; i < end; ++i) {
 #if GROUP_EDGES
             bool stop = callback(outEdges[i].neighbor, outEdges[i].weight);
