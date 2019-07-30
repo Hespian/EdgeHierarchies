@@ -116,10 +116,10 @@ public:
             }
 
             if(forward) {
-                makeStep<true>(shortestPathMeetingNode, shortestPathLength, stallingPercent);
+                makeStep<true>(shortestPathMeetingNode, shortestPathLength);
             }
             else {
-                makeStep<false>(shortestPathMeetingNode, shortestPathLength, stallingPercent);
+                makeStep<false>(shortestPathMeetingNode, shortestPathLength);
             }
             forward = !forward;
             // TODO: Why is this wrong?
@@ -135,7 +135,7 @@ public:
 protected:
 
     template<bool forward>
-    bool canStallAtNodeBackward(const NODE_T v, int percent) {
+    bool canStallAtNodeBackward(const NODE_T v) {
         const RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         const vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
 
@@ -154,10 +154,10 @@ protected:
         };
 
         if(forward) {
-            g.forAllNeighborsInAndStop(v, stallCheckFunc, percent);
+            g.forAllNeighborsInAndStop(v, stallCheckFunc);
         }
         else {
-            g.forAllNeighborsOutAndStop(v, stallCheckFunc, percent);
+            g.forAllNeighborsOutAndStop(v, stallCheckFunc);
         }
         return result;
     }
@@ -175,7 +175,7 @@ protected:
     }
 
     template<bool forward>
-    void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength, float stallingPercent) {
+    void makeStep(NODE_T &shortestPathMeetingNode, EDGEWEIGHT_T &shortestPathLength) {
         RoutingKit::MinIDQueue &PQCurrent = forward ? PQForward : PQBackward;
         RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         RoutingKit::TimestampFlags &wasPushedOther = forward ? wasPushedBackward : wasPushedForward;
@@ -200,7 +200,7 @@ protected:
         }
 
         if constexpr(stallBackward){
-                if(canStallAtNodeBackward<forward>(u, stallingPercent)) {
+                if(canStallAtNodeBackward<forward>(u)) {
                     return;
                 }
             }
