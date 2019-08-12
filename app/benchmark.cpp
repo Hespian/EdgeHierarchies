@@ -176,6 +176,7 @@ std::vector<DijkstraRankRunningtime> GenerateRandomQueries(unsigned numQueries, 
 template<bool EHForwardStalling, bool EHBackwardStalling, bool CHStallOnDemand, bool minimalSearchSpace, template<bool, bool, bool> class QueryType>
 int benchmark(bool dijkstraRank, bool test, EdgeHierarchyGraphQueryOnly &ehGraph, RoutingKit::ContractionHierarchyQuery &chQuery, std::vector<DijkstraRankRunningtime> &queries, float stallingPercent) {
     QueryType<EHForwardStalling, EHBackwardStalling, minimalSearchSpace> newQuery = QueryType<EHForwardStalling, EHBackwardStalling, minimalSearchSpace>(ehGraph);
+    newQuery.avgSearchSpace = 626;
     // EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, minimalSearchSpace> newQuery = EdgeHierarchyQueryOnly<EHForwardStalling, EHBackwardStalling, minimalSearchSpace>(ehGraph);
 
     // std::cout << "Running benchmark" << std::endl;
