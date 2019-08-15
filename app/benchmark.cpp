@@ -620,12 +620,18 @@ int main(int argc, char* argv[]) {
     }
 
 
-    if(partialStallingPercent == -2) {
+    if(EHBackwardStalling && partialStallingPercent == -2) {
+        std::cout << "----------------------------------------" << std::endl;
+        std::cout << "No backward stalling" << std::endl;
+        benchmark(EHForwardStalling, false, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, newG, chQuery, queries, -1);
         for(float i = 0; i <= 100; i += 10) {
             std::cout << "----------------------------------------" << std::endl;
             std::cout << "Stalling " << i << "%" << std::endl;
             benchmark(EHForwardStalling, EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, newG, chQuery, queries, i);
         }
+        std::cout << "----------------------------------------" << std::endl;
+        std::cout << "Full backward stalling (not partial)" << std::endl;
+        benchmark(EHForwardStalling, true, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, newG, chQuery, queries, -1);
     }
     else {
         benchmark(EHForwardStalling, EHBackwardStalling, CHStallOnDemand, minimalSearchSpace, dijkstraRank, test, noTimestamp, newG, chQuery, queries, partialStallingPercent);
