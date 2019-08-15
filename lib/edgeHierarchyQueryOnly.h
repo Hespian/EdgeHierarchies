@@ -26,7 +26,7 @@ public:
     uint64_t numEdgesRelaxed;
     uint64_t numEdgesLookedAtForStalling;
     uint64_t popCount;
-    uint64_t avgSearchSpace;
+    // uint64_t avgSearchSpace;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledForward;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledBackward;
 
@@ -200,18 +200,18 @@ protected:
             }
         }
 
-        if constexpr(stallBackward){
-                int stallingPercentThisIteration = (1.0 * numVerticesSettled)/avgSearchSpace * stallingPercent;
-                stallingPercentThisIteration = std::clamp(stallingPercentThisIteration, 0, 100);
-                if(canStallAtNodeBackward<forward>(u, stallingPercent)) {
-                    return;
-                }
-            }
         // if constexpr(stallBackward){
+        //         int stallingPercentThisIteration = (1.0 * numVerticesSettled)/avgSearchSpace * stallingPercent;
+        //         stallingPercentThisIteration = std::clamp(stallingPercentThisIteration, 0, 100);
         //         if(canStallAtNodeBackward<forward>(u, stallingPercent)) {
         //             return;
         //         }
         //     }
+        if constexpr(stallBackward){
+                if(canStallAtNodeBackward<forward>(u, stallingPercent)) {
+                    return;
+                }
+            }
 
 
         if constexpr(logVerticesSettled) {
