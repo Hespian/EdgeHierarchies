@@ -12,7 +12,7 @@ commitId = subprocess.check_output(["git", "describe", "--always"]).strip().deco
 resultsDir = os.path.join(str(dir_path), "../results", str(commitId))
 os.makedirs(resultsDir, exist_ok=True)
 
-def runGraph(graphPath, turnCosts, time, dijkstra, EHForwardStalling=False, EHBackwardStalling=False, CHNoStallOnDemand=False, minimalSearchSpace=False, DFSPreOrder=True):
+def runGraph(graphPath, turnCosts, time, dijkstra, EHForwardStalling=False, EHBackwardStalling=False, CHNoStallOnDemand=False, minimalSearchSpace=False, DFSPreOrder=True, PartialStalling=True):
     graphName = os.path.basename(graphPath)
     resultsFile = os.path.join(resultsDir, graphName)
     if turnCosts :
@@ -54,6 +54,10 @@ def runGraph(graphPath, turnCosts, time, dijkstra, EHForwardStalling=False, EHBa
     if EHBackwardStalling :
         command += " --EHBackwardStalling"
         resultsFile += "EHBackwardStalling"
+
+    if PartialStalling :
+        command += " --partialStallingPercent"
+        resultsFile += "PartialStalling"
 
     if CHNoStallOnDemand:
         command += " --CHNoStallOnDemand"
