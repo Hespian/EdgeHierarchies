@@ -56,7 +56,7 @@ def runGraph(graphPath, turnCosts, time, dijkstra, EHForwardStalling=False, EHBa
         resultsFile += "EHBackwardStalling"
 
     if PartialStalling :
-        command += " --partialStallingPercent"
+        command += " --partialStallingPercent -2"
         resultsFile += "PartialStalling"
 
     if CHNoStallOnDemand:
