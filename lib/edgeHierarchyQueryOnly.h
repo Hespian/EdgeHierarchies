@@ -27,6 +27,7 @@ public:
     uint64_t numEdgesLookedAtForStalling;
     uint64_t popCount;
     // uint64_t avgSearchSpace;
+    // NODE_T numVerticesSettledThisQuery;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledForward;
     std::vector<std::pair<NODE_T, EDGEWEIGHT_T>> verticesSettledBackward;
 
@@ -57,6 +58,7 @@ public:
     }
 
     EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT, float stallingPercent) {
+        // numVerticesSettledThisQuery = 0;
         NODE_T s = g.getInternalNodeNumber(externalS);
         NODE_T t = g.getInternalNodeNumber(externalT);
         wasPushedForward.reset_all();
@@ -229,9 +231,11 @@ protected:
         }
 
         // if constexpr(stallBackward){
-        //         int stallingPercentThisIteration = (1.0 * numVerticesSettled)/avgSearchSpace * stallingPercent;
+        //         numVerticesSettledThisQuery++
+        //         int stallingPercentThisIteration = (1.0 * numVerticesSettledThisQuery)/avgSearchSpace * stallingPercent;
+        //         int stallingPercentThisIteration = (1.0 * (avgSearchSpace - numVerticesSettledThisQuery))/avgSearchSpace * stallingPercent;
         //         stallingPercentThisIteration = std::clamp(stallingPercentThisIteration, 0, 100);
-        //         if(canStallAtNodeBackward<forward>(u, stallingPercent)) {
+        //         if(canStallAtNodeBackward<forward>(u, stallingPercentThisIteration)) {
         //             return;
         //         }
         //     }
