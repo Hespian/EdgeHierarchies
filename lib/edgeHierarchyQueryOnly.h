@@ -58,7 +58,7 @@ public:
     }
 
     EDGEWEIGHT_T getDistance(NODE_T externalS, NODE_T externalT, float stallingPercent) {
-        // numVerticesSettledThisQuery = 0;
+        //numVerticesSettledThisQuery = 0;
         NODE_T s = g.getInternalNodeNumber(externalS);
         NODE_T t = g.getInternalNodeNumber(externalT);
         wasPushedForward.reset_all();
@@ -231,11 +231,11 @@ protected:
         }
 
         // if constexpr(stallBackward){
-        //         numVerticesSettledThisQuery++
+        //         numVerticesSettledThisQuery++;
         //         int stallingPercentThisIteration = (1.0 * numVerticesSettledThisQuery)/avgSearchSpace * stallingPercent;
         //         int stallingPercentThisIteration = (1.0 * (avgSearchSpace - numVerticesSettledThisQuery))/avgSearchSpace * stallingPercent;
         //         stallingPercentThisIteration = std::clamp(stallingPercentThisIteration, 0, 100);
-        //         if(canStallAtNodeBackward<forward>(u, stallingPercentThisIteration)) {
+        //         if(canStallAtNodeBackwardPartial<forward>(u, stallingPercentThisIteration)) {
         //             return;
         //         }
         //     }
