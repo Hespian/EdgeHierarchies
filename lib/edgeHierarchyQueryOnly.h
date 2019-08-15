@@ -19,7 +19,7 @@
 #include "edgeHierarchyGraphQueryOnly.h"
 
 
-template <bool stallForward, bool stallBackward, bool logVerticesSettled>
+template <bool stallForward, bool stallBackward, bool partialStalling, bool logVerticesSettled>
 class EdgeHierarchyQueryOnly {
 public:
     uint64_t numVerticesSettled;
@@ -136,7 +136,7 @@ public:
 protected:
 
     template<bool forward>
-    bool canStallAtNodeBackward(const NODE_T v, int percent) {
+    bool canStallAtNodeBackward(const NODE_T v) {
         const RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
         const vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
 
@@ -155,10 +155,38 @@ protected:
         };
 
         if(forward) {
-            g.forAllNeighborsInAndStop(v, stallCheckFunc, percent);
+            g.forAllNeighborsInAndStop(v, stallCheckFunc);
         }
         else {
-            g.forAllNeighborsOutAndStop(v, stallCheckFunc, percent);
+            g.forAllNeighborsOutAndStop(v, stallCheckFunc);
+        }
+        return result;
+    }
+
+    template<bool forward>
+    bool canStallAtNodeBackwardPartial(const NODE_T v, int percent) {
+        const RoutingKit::TimestampFlags &wasPushedCurrent = forward ? wasPushedForward : wasPushedBackward;
+        const vector<EDGEWEIGHT_T> &tentativeDistanceCurrent = forward ? tentativeDistanceForward : tentativeDistanceBackward;
+
+        bool result = false;
+
+        auto stallCheckFunc = [&] (const NODE_T u, const EDGEWEIGHT_T weight) {
+            ++numEdgesLookedAtForStalling;
+            if(wasPushedCurrent.is_set(u)) {
+                EDGEWEIGHT_T distanceV = tentativeDistanceCurrent[u] + weight;
+                if(distanceV < tentativeDistanceCurrent[v]) {
+                    result = true;
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        if(forward) {
+            g.forAllNeighborsInAndStopPartial(v, stallCheckFunc, percent);
+        }
+        else {
+            g.forAllNeighborsOutAndStopPartial(v, stallCheckFunc, percent);
         }
         return result;
     }
@@ -208,8 +236,15 @@ protected:
         //         }
         //     }
         if constexpr(stallBackward){
-                if(canStallAtNodeBackward<forward>(u, stallingPercent)) {
-                    return;
+                if constexpr(partialStalling) {
+                    if(canStallAtNodeBackwardPartial<forward>(u, stallingPercent)) {
+                        return;
+                    }
+                }
+                else {
+                    if(canStallAtNodeBackward<forward>(u)) {
+                        return;
+                    }
                 }
             }
 
