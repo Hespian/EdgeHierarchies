@@ -17,4 +17,4 @@ To add turn penalties, add
 to the command line parameters, where [UTurnCosts] are the costs for taking a U-turn.
 
 ## License
-Our code is released under the GPL License, but external libraries might be under different licenses. See the respective directories under the external or googletest directory.
+Our code is released under the MIT License, but external libraries might be under different licenses. See the respective directories under the external or googletest directory.
