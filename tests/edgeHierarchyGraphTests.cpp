@@ -250,7 +250,7 @@ TEST(EdgeHierarchyGraphTest, TurnCostSimple) {
     g.addEdge(3, 4, 1);
     g.addEdge(4, 2, 1);
 
-    auto turnCostGraph = g.getTurnCostGraph();
+    auto turnCostGraph = g.getTurnCostGraph(100);
 
     vector<edge> expectedEdges = {
         {0, 1, 1},
@@ -291,19 +291,19 @@ TEST(EdgeHierarchyGraphTest, dfsOrderSimple) {
     g.addEdge(1, 3, 2);
     g.addEdge(2, 0, 5);
 
-    EdgeHierarchyGraph orderedG = g.getDFSOrderGraph<EdgeHierarchyGraph>();
+    EdgeHierarchyGraph orderedG = g.getDFSOrderGraph<EdgeHierarchyGraph, false>();
 
     EXPECT_EQ(orderedG.getNumberOfEdges(), orderedG.getNumberOfEdges());
     EXPECT_EQ(orderedG.getNumberOfNodes(), orderedG.getNumberOfNodes());
 
-    EXPECT_TRUE(orderedG.hasEdge(0, 2));
-    EXPECT_EQ(orderedG.getEdgeWeight(0, 2), g.getEdgeWeight(3, 1));
-    EXPECT_TRUE(orderedG.hasEdge(2, 0));
-    EXPECT_EQ(orderedG.getEdgeWeight(2, 0), g.getEdgeWeight(1, 3));
+    EXPECT_TRUE(orderedG.hasEdge(1, 2));
+    EXPECT_EQ(orderedG.getEdgeWeight(1, 2), g.getEdgeWeight(3, 1));
     EXPECT_TRUE(orderedG.hasEdge(2, 1));
-    EXPECT_EQ(orderedG.getEdgeWeight(2, 1), g.getEdgeWeight(1, 2));
-    EXPECT_TRUE(orderedG.hasEdge(1, 3));
-    EXPECT_EQ(orderedG.getEdgeWeight(1, 3), g.getEdgeWeight(2, 0));
+    EXPECT_EQ(orderedG.getEdgeWeight(2, 1), g.getEdgeWeight(1, 3));
+    EXPECT_TRUE(orderedG.hasEdge(2, 0));
+    EXPECT_EQ(orderedG.getEdgeWeight(2, 0), g.getEdgeWeight(1, 2));
+    EXPECT_TRUE(orderedG.hasEdge(0, 3));
+    EXPECT_EQ(orderedG.getEdgeWeight(0, 3), g.getEdgeWeight(2, 0));
     EXPECT_TRUE(orderedG.hasEdge(3, 2));
     EXPECT_EQ(orderedG.getEdgeWeight(3, 2), g.getEdgeWeight(0, 1));
 }
