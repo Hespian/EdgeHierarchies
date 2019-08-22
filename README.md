@@ -1,4 +1,4 @@
-# EdgeHierarchies
+# Edge Hierarchies
 
 To compile:
 
