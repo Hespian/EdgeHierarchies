@@ -1,5 +1,11 @@
 # Edge Hierarchies
 
+This is the Code written for the paper "More Hierarchy in Route Planning Using Edge Hierarchies." if you would like to use it for your publication, please cite the following paper:
+
+Hespe, Demian, and Peter Sanders. "More Hierarchy in Route Planning Using Edge Hierarchies" 19th Symposium on Algorithmic Approaches for Transportation Modelling, Optimization, and Systems. 2019.
+
+## Compiling and running
+
 To compile:
 
     mkdir build
